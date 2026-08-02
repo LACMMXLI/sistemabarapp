@@ -9,6 +9,7 @@ import type {
   UpdateUserInput,
   UserPublic,
   CreateTableInput,
+  UpdateTableInput,
   DiningTable,
 } from "@barapp/contracts";
 import { apiFetch } from "./api";
@@ -32,4 +33,6 @@ export const updateUser = (id: string, input: UpdateUserInput) =>
 
 export const createTable = (input: CreateTableInput) =>
   apiFetch<void>("/tables", { method: "POST", body: JSON.stringify(input) });
+export const updateTable = (id: string, input: UpdateTableInput) =>
+  apiFetch<void>(`/tables/${id}`, { method: "PATCH", body: JSON.stringify(input) });
 export const fetchTablesAdmin = (): Promise<DiningTable[]> => apiFetch<DiningTable[]>("/tables");

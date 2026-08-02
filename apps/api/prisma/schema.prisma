@@ -452,3 +452,12 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([createdAt])
 }
+
+/** Fila única de configuración administrativa del negocio (id fijo "default"). */
+model AppSettings {
+  id             String   @id @default("default")
+  businessName   String   @default("Bar POS")
+  sidebarName    String   @default("Bar POS")
+  logoUrl        String?
+  updatedAt      DateTime @updatedAt
+}

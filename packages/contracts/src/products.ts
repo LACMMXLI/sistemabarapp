@@ -32,6 +32,8 @@ export const productOperationalSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
   priceCents: z.number().int(),
+  effectivePriceCents: z.number().int(),
+  activePromotionName: z.string().nullable(),
   categoryId: z.string().uuid(),
   type: productTypeSchema,
   imageUrl: z.string().nullable(),

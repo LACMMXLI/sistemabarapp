@@ -12,9 +12,10 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@barapp/contracts": "workspace:*",
     "@barapp/config": "workspace:*",
+    "@barapp/contracts": "workspace:*",
     "@tanstack/react-query": "^5.62.7",
+    "lucide-react": "^1.28.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.0.2",

@@ -1,5 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { Beer, LayoutGrid, Plus } from "lucide-react";
 import type { Category, ProductOperational } from "@barapp/contracts";
 import { fetchCategories, fetchProducts } from "../lib/catalogApi";
 
@@ -15,11 +17,22 @@ const STOCK_BADGE: Record<ProductOperational["stockStatus"], string | null> = {
 };
 
 export function ProductGrid({ onSelect, disabled }: { onSelect: (product: ProductOperational) => void; disabled?: boolean }) {
+  const [searchParams] = useSearchParams();
   const [categoryId, setCategoryId] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => searchParams.get("q") ?? "");
 
-  const { data: categories } = useQuery({ queryKey: ["categories"], queryFn: fetchCategories });
-  const { data: products } = useQuery({
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (q) setSearch(q);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  const { data: categories, isLoading: loadingCategories } = useQuery({ queryKey: ["categories"], queryFn: fetchCategories });
+  const {
+    data: products,
+    isLoading: loadingProducts,
+    isError,
+  } = useQuery({
     queryKey: ["products", categoryId],
     queryFn: () => fetchProducts(categoryId ?? undefined),
   });
@@ -32,18 +45,29 @@ export function ProductGrid({ onSelect, disabled }: { onSelect: (product: Produc
 
   return (
     <div className="flex h-full flex-col">
+      <label htmlFor="product-search" className="sr-only">
+        Buscar producto
+      </label>
       <input
+        id="product-search"
         placeholder="Buscar producto…"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="mb-2 touch-target rounded-md bg-slate-800 px-3 text-white outline-none focus:ring-2 focus:ring-sky-500"
+        className="mb-2 touch-target rounded-md bg-slate-800 px-3 text-white outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
       />
       <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
-        <CategoryChip label="Todas" icon="🍹" active={categoryId === null} onClick={() => setCategoryId(null)} />
+        <CategoryChip label="Todas" icon={LayoutGrid} active={categoryId === null} onClick={() => setCategoryId(null)} />
         {categories?.map((c: Category) => (
-          <CategoryChip key={c.id} label={c.name} icon={c.icon} active={categoryId === c.id} onClick={() => setCategoryId(c.id)} />
+          <CategoryChip key={c.id} label={c.name} emoji={c.icon} active={categoryId === c.id} onClick={() => setCategoryId(c.id)} />
         ))}
       </div>
+      {isError && (
+        <p className="rounded-md bg-red-900/40 px-3 py-2 text-sm text-red-200">No se pudieron cargar los productos.</p>
+      )}
+      {!isError && (loadingProducts || loadingCategories) && <p className="p-3 text-sm text-slate-400">Cargando catálogo…</p>}
+      {!isError && !loadingProducts && filtered.length === 0 && (
+        <p className="p-3 text-sm text-slate-500">No hay productos que coincidan con la búsqueda.</p>
+      )}
       <div className="grid flex-1 grid-cols-2 gap-3 overflow-y-auto sm:grid-cols-3 content-start">
         {filtered.map((product) => (
           <ProductCard key={product.id} product={product} disabled={disabled} onSelect={onSelect} />
@@ -72,22 +96,32 @@ function ProductCard({
         {product.imageUrl ? (
           <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
         ) : (
-          <span className="text-3xl opacity-40">🍺</span>
+          <Beer className="h-8 w-8 text-slate-600" strokeWidth={1.5} />
         )}
       </div>
       <div className="p-2.5">
         <p className="truncate text-sm font-semibold text-white">{product.name}</p>
         <div className="mt-1.5 flex items-center justify-between">
-          <span className="text-sm font-bold text-sky-300">{formatMoney(product.priceCents)}</span>
+          <div>
+            {product.activePromotionName ? (
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-sm font-bold text-emerald-400">{formatMoney(product.effectivePriceCents)}</span>
+                <span className="text-xs text-slate-500 line-through">{formatMoney(product.priceCents)}</span>
+              </div>
+            ) : (
+              <span className="text-sm font-bold text-sky-300">{formatMoney(product.priceCents)}</span>
+            )}
+          </div>
           <button
             disabled={isDisabled}
             onClick={() => onSelect(product)}
             aria-label={`Agregar ${product.name}`}
-            className="touch-target flex h-9 w-9 items-center justify-center rounded-full bg-sky-600 text-lg font-bold text-white hover:bg-sky-500 disabled:opacity-40"
+            className="touch-target flex h-9 w-9 items-center justify-center rounded-full bg-sky-600 text-white hover:bg-sky-500 disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-300"
           >
-            +
+            <Plus className="h-5 w-5" strokeWidth={2.5} />
           </button>
         </div>
+        {product.activePromotionName && <p className="mt-1 text-[10px] font-bold text-emerald-400">{product.activePromotionName}</p>}
         {badge && <p className={`mt-1 text-[10px] font-bold ${outOfStock ? "text-red-400" : "text-amber-400"}`}>{badge}</p>}
       </div>
     </div>
@@ -96,23 +130,26 @@ function ProductCard({
 
 function CategoryChip({
   label,
-  icon,
+  icon: Icon,
+  emoji,
   active,
   onClick,
 }: {
   label: string;
-  icon: string | null;
+  icon?: typeof LayoutGrid;
+  emoji?: string | null;
   active: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       onClick={onClick}
-      className={`touch-target flex shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-medium ${
+      className={`touch-target flex shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-400 ${
         active ? "bg-sky-600 text-white" : "bg-slate-800 text-slate-300"
       }`}
     >
-      {icon && <span>{icon}</span>}
+      {Icon && <Icon className="h-4 w-4" />}
+      {!Icon && emoji && <span>{emoji}</span>}
       {label}
     </button>
   );

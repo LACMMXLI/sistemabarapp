@@ -44,6 +44,22 @@ export class UsersService {
     if (!existing) {
       throw new ApiException(404, ERROR_CODES.NOT_FOUND, "Usuario no encontrado.");
     }
+
+    const isDeactivating = input.active === false && existing.active;
+    const isDemotingFromAdmin = input.role !== undefined && input.role !== "ADMIN" && existing.role === "ADMIN" && existing.active;
+
+    if ((isDeactivating || isDemotingFromAdmin) && existing.role === "ADMIN") {
+      if (id === actor.userId) {
+        throw new ApiException(409, ERROR_CODES.CONFLICT, "No puedes desactivar o quitarte el rol de administrador a ti mismo.");
+      }
+      const otherActiveAdmins = await this.prisma.user.count({
+        where: { role: "ADMIN", active: true, id: { not: id } },
+      });
+      if (otherActiveAdmins === 0) {
+        throw new ApiException(409, ERROR_CODES.CONFLICT, "No puedes dejar el sistema sin al menos un administrador activo.");
+      }
+    }
+
     const passwordHash = input.password ? await hashPassword(input.password) : undefined;
     const user = await this.prisma.user.update({
       where: { id },

@@ -1,8 +1,16 @@
-import type { BilliardRateDto, BilliardSessionDto } from "@barapp/contracts";
+import type { BilliardRateDto, BilliardSessionDto, CreateBilliardRateInput, UpdateBilliardRateInput } from "@barapp/contracts";
 import { apiFetch, newIdempotencyKey } from "./api";
 
 export function fetchBilliardRates(): Promise<BilliardRateDto[]> {
   return apiFetch<BilliardRateDto[]>("/billiard/rates");
+}
+
+export function createBilliardRate(input: CreateBilliardRateInput): Promise<BilliardRateDto> {
+  return apiFetch<BilliardRateDto>("/billiard/rates", { method: "POST", body: JSON.stringify(input) });
+}
+
+export function updateBilliardRate(id: string, input: UpdateBilliardRateInput): Promise<BilliardRateDto> {
+  return apiFetch<BilliardRateDto>(`/billiard/rates/${id}`, { method: "POST", body: JSON.stringify(input) });
 }
 
 export function fetchActiveSession(tableId: string): Promise<BilliardSessionDto | null> {

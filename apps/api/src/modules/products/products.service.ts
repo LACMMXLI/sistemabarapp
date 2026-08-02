@@ -5,6 +5,7 @@ import { PrismaService } from "../../prisma/prisma.service";
 import { ApiException } from "../../common/errors/api-exception";
 import { recordAudit } from "../../lib/audit";
 import { computeStockStatus } from "../inventory/inventory.helpers";
+import { resolveApplicablePromotion } from "../promotions/promotions.helpers";
 import type { AuthenticatedUser } from "../../common/types/auth-user";
 
 @Injectable()
@@ -43,16 +44,29 @@ export class ProductsService {
       include: { inventory: true },
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     });
-    return products.map((p) => ({
-      id: p.id,
-      name: p.name,
-      priceCents: p.priceCents,
-      categoryId: p.categoryId,
-      type: p.type,
-      imageUrl: p.imageUrl,
-      active: p.active,
-      stockStatus: computeStockStatus(p.tracksInventory, p.tracksInventory ? p.inventory?.currentStock ?? 0 : null, p.lowStockThreshold),
-    }));
+    const now = new Date();
+    return Promise.all(
+      products.map(async (p) => {
+        const promotion = await resolveApplicablePromotion(this.prisma, {
+          productId: p.id,
+          categoryId: p.categoryId,
+          basePriceCents: p.priceCents,
+          at: now,
+        });
+        return {
+          id: p.id,
+          name: p.name,
+          priceCents: p.priceCents,
+          effectivePriceCents: promotion?.appliedPriceCents ?? p.priceCents,
+          activePromotionName: promotion?.promotionName ?? null,
+          categoryId: p.categoryId,
+          type: p.type,
+          imageUrl: p.imageUrl,
+          active: p.active,
+          stockStatus: computeStockStatus(p.tracksInventory, p.tracksInventory ? p.inventory?.currentStock ?? 0 : null, p.lowStockThreshold),
+        };
+      }),
+    );
   }
 
   async create(input: CreateProductInput, actor: AuthenticatedUser): Promise<ProductAdmin> {

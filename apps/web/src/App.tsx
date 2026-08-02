@@ -12,6 +12,7 @@ import { ProductsPage } from "./routes/admin/ProductsPage";
 import { CategoriesPage } from "./routes/admin/CategoriesPage";
 import { PromotionsPage } from "./routes/admin/PromotionsPage";
 import { UsersPage } from "./routes/admin/UsersPage";
+import { SettingsPage } from "./routes/admin/SettingsPage";
 import { CashPage } from "./routes/CashPage";
 import { ReportsPage } from "./routes/ReportsPage";
 import { AuditPage } from "./routes/AuditPage";
@@ -46,6 +47,9 @@ export function App() {
           </Route>
           <Route element={<ProtectedRoute permission="USERS_MANAGE" />}>
             <Route path="/usuarios" element={<UsersPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permission="SETTINGS_MANAGE" />}>
+            <Route path="/configuracion" element={<SettingsPage />} />
           </Route>
           <Route element={<ProtectedRoute permission="CASH_VIEW_SHIFTS" />}>
             <Route path="/caja" element={<CashPage />} />

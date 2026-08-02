@@ -1,5 +1,6 @@
 import { Controller, Get, Query, UseGuards } from "@nestjs/common";
-import { auditLogQuerySchema, type AuditLogDto } from "@barapp/contracts";
+import { Prisma } from "@prisma/client";
+import { auditLogQuerySchema, type AuditLogDto, type AuditLogList } from "@barapp/contracts";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { RequirePermission } from "../../common/decorators/require-permission.decorator";
 import { PrismaService } from "../../prisma/prisma.service";
@@ -11,12 +12,33 @@ export class AuditController {
   constructor(private readonly prisma: PrismaService) {}
 
   @Get()
-  async list(@Query() query: unknown): Promise<{ items: AuditLogDto[]; page: number; pageSize: number; total: number }> {
+  async list(@Query() query: unknown): Promise<AuditLogList> {
     const input = auditLogQuerySchema.parse(query);
-    const where = {
+
+    const where: Prisma.AuditLogWhereInput = {
       ...(input.entityType ? { entityType: input.entityType } : {}),
       ...(input.userId ? { userId: input.userId } : {}),
+      ...(input.action ? { action: input.action } : {}),
+      ...(input.from || input.to
+        ? {
+            createdAt: {
+              ...(input.from ? { gte: new Date(input.from) } : {}),
+              ...(input.to ? { lte: new Date(input.to) } : {}),
+            },
+          }
+        : {}),
+      ...(input.search
+        ? {
+            OR: [
+              { action: { contains: input.search, mode: "insensitive" } },
+              { entityType: { contains: input.search, mode: "insensitive" } },
+              { entityId: { contains: input.search, mode: "insensitive" } },
+              { user: { fullName: { contains: input.search, mode: "insensitive" } } },
+            ],
+          }
+        : {}),
     };
+
     const [items, total] = await Promise.all([
       this.prisma.auditLog.findMany({
         where,
@@ -29,7 +51,7 @@ export class AuditController {
     ]);
 
     return {
-      items: items.map((log) => ({
+      items: items.map((log): AuditLogDto => ({
         id: log.id,
         action: log.action,
         entityType: log.entityType,

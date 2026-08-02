@@ -12,6 +12,7 @@ import { BilliardModule } from "./modules/billiard/billiard.module";
 import { CashModule } from "./modules/cash/cash.module";
 import { ReportsModule } from "./modules/reports/reports.module";
 import { AuditModule } from "./modules/audit/audit.module";
+import { SettingsModule } from "./modules/settings/settings.module";
 import { HealthModule } from "./modules/health/health.module";
 
 @Module({
@@ -29,6 +30,7 @@ import { HealthModule } from "./modules/health/health.module";
     CashModule,
     ReportsModule,
     AuditModule,
+    SettingsModule,
     HealthModule,
   ],
 })

@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Pause, Play, StopCircle } from "lucide-react";
 import type { DiningTable } from "@barapp/contracts";
 import { fetchActiveSession, fetchBilliardRates, finishSession, pauseSession, resumeSession, startSession } from "../lib/billiardApi";
 import { ApiError } from "../lib/api";
+import { ConfirmDialog } from "./ConfirmDialog";
 
 function formatElapsed(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -14,6 +16,7 @@ export function BilliardControls({ table, orderId }: { table: DiningTable; order
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
+  const [showFinishDialog, setShowFinishDialog] = useState(false);
 
   const { data: session, refetch } = useQuery({
     queryKey: ["billiard-session", table.id],
@@ -51,16 +54,24 @@ export function BilliardControls({ table, orderId }: { table: DiningTable; order
   });
   const finishMutation = useMutation({
     mutationFn: () => finishSession(session!.id),
-    onSuccess: afterMutation,
+    onSuccess: () => {
+      setShowFinishDialog(false);
+      afterMutation();
+    },
     onError: (err) => setError(err instanceof ApiError ? err.message : "No se pudo finalizar."),
   });
 
+  const busy = startMutation.isPending || pauseMutation.isPending || resumeMutation.isPending;
   const elapsed = session ? session.accumulatedSeconds + (session.status === "ACTIVE" ? tick : 0) : 0;
   const estimateCents = session ? Math.max(Math.ceil(elapsed / 60) * session.appliedPricePerMinuteCents, session.minimumChargeCents) : 0;
 
   return (
     <div className="mb-2 rounded-md bg-amber-950/50 p-3">
-      {error && <p className="mb-2 text-xs text-red-300" onClick={() => setError(null)}>{error}</p>}
+      {error && (
+        <button type="button" className="mb-2 block text-left text-xs text-red-300" onClick={() => setError(null)}>
+          {error}
+        </button>
+      )}
       {!session && (
         <div>
           <p className="mb-2 text-sm text-amber-200">Billar sin iniciar</p>
@@ -68,12 +79,14 @@ export function BilliardControls({ table, orderId }: { table: DiningTable; order
             {rates?.map((rate) => (
               <button
                 key={rate.id}
+                disabled={busy}
                 onClick={() => startMutation.mutate(rate.id)}
-                className="touch-target rounded-md bg-amber-600 px-3 text-sm font-medium text-white"
+                className="touch-target rounded-md bg-amber-600 px-3 text-sm font-medium text-white disabled:opacity-50"
               >
                 Iniciar · {rate.name}
               </button>
             ))}
+            {rates?.length === 0 && <p className="text-xs text-amber-300">No hay tarifas configuradas. Crea una en Configuración.</p>}
           </div>
         </div>
       )}
@@ -85,25 +98,46 @@ export function BilliardControls({ table, orderId }: { table: DiningTable; order
           </div>
           <div className="flex gap-2">
             {session.status === "ACTIVE" && (
-              <button onClick={() => pauseMutation.mutate()} className="touch-target rounded-md bg-slate-700 px-3 text-sm text-white">
-                Pausar
+              <button
+                onClick={() => pauseMutation.mutate()}
+                disabled={busy}
+                aria-label="Pausar"
+                className="touch-target flex items-center gap-1 rounded-md bg-slate-700 px-3 text-sm text-white disabled:opacity-50"
+              >
+                <Pause className="h-4 w-4" /> Pausar
               </button>
             )}
             {session.status === "PAUSED" && (
-              <button onClick={() => resumeMutation.mutate()} className="touch-target rounded-md bg-slate-700 px-3 text-sm text-white">
-                Reanudar
+              <button
+                onClick={() => resumeMutation.mutate()}
+                disabled={busy}
+                aria-label="Reanudar"
+                className="touch-target flex items-center gap-1 rounded-md bg-slate-700 px-3 text-sm text-white disabled:opacity-50"
+              >
+                <Play className="h-4 w-4" /> Reanudar
               </button>
             )}
             <button
-              onClick={() => {
-                if (confirm("¿Finalizar sesión de billar y agregar el cargo a la cuenta?")) finishMutation.mutate();
-              }}
-              className="touch-target rounded-md bg-red-700 px-3 text-sm font-medium text-white"
+              onClick={() => setShowFinishDialog(true)}
+              disabled={busy}
+              className="touch-target flex items-center gap-1 rounded-md bg-red-700 px-3 text-sm font-medium text-white disabled:opacity-50"
             >
-              Finalizar
+              <StopCircle className="h-4 w-4" /> Finalizar
             </button>
           </div>
         </div>
+      )}
+
+      {showFinishDialog && (
+        <ConfirmDialog
+          title="Finalizar sesión de billar"
+          description={`Se agregará el cargo estimado de $${(estimateCents / 100).toFixed(2)} a la cuenta. Esta acción no se puede deshacer.`}
+          confirmLabel="Finalizar"
+          destructive
+          pending={finishMutation.isPending}
+          onConfirm={() => finishMutation.mutate()}
+          onCancel={() => setShowFinishDialog(false)}
+        />
       )}
     </div>
   );

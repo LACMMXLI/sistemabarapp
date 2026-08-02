@@ -6,11 +6,28 @@ html, body, #root {
   height: 100%;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   @apply bg-slate-950 text-slate-100;
+  overflow-x: hidden;
 }
 
 .touch-target {
-  min-height: 48px;
-  min-width: 48px;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+@media (min-width: 768px) {
+  .touch-target {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid theme("colors.sky.400");
+  outline-offset: 2px;
 }

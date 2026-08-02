@@ -4,6 +4,7 @@ build/
 .next/
 .turbo/
 .env
+.env.test
 .env.*.local
 *.log
 coverage/
