@@ -26,9 +26,10 @@ export function QuickSalePage() {
   const canEdit = order.status === "OPEN";
 
   return (
-    <div className="grid h-full grid-cols-1 md:grid-cols-[1fr_360px]">
-      <div className="border-b border-slate-800 p-3 md:border-b-0 md:border-r">
+    <div className="grid h-full min-h-0 grid-cols-1 md:grid-cols-[minmax(0,1fr)_260px] xl:grid-cols-[minmax(0,1fr)_280px]">
+      <div className="min-h-0 border-b border-slate-800 p-3 md:border-b-0 md:border-r lg:p-4">
         <ProductGrid
+          hideSearch
           disabled={!canEdit}
           onSelect={(product) =>
             addOrderItem(order.id, product.id).then(() => queryClient.invalidateQueries({ queryKey: ["order", order.id] }))

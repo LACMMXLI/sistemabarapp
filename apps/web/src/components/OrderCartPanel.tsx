@@ -60,10 +60,11 @@ export function OrderCartPanel({
   const activeItems = order.items.filter((i) => !i.cancelledAt);
 
   return (
-    <div className="flex h-full flex-col bg-slate-900 p-3">
-      <div className="mb-2 flex items-center justify-between">
+    <div className="order-cart flex h-full min-h-0 flex-col bg-[#07111d] p-3">
+      <p className="mb-4 text-lg font-semibold text-white">Cuenta actual</p>
+      <div className="mb-4 flex items-center justify-between rounded-xl border border-slate-700 bg-[#0b1724] p-3">
         <div>
-          <p className="text-sm font-semibold text-white">{order.tableName ?? "Venta rápida"}</p>
+          <p className="text-base font-semibold text-white">{order.tableName ?? "Venta rápida"}</p>
           <p className="text-xs text-slate-400">
             {capacity ? `${capacity} personas · ` : ""}
             {order.openedByName}
@@ -87,15 +88,15 @@ export function OrderCartPanel({
         </button>
       )}
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto">
         {activeItems.length === 0 && <p className="text-sm text-slate-500">Sin productos agregados.</p>}
         {activeItems.map((item) => (
-          <div key={item.id} className="mb-2 rounded-md bg-slate-800 p-2">
+          <div key={item.id} className="mb-2 border-b border-slate-700/80 px-1 py-3">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-white">
                 {item.quantity} {item.productNameSnapshot}
               </span>
-              <span className="text-sm text-sky-300">{formatMoney(item.totalCents)}</span>
+              <span className="text-sm text-slate-200">{formatMoney(item.totalCents)}</span>
             </div>
             {item.note && <span className="text-[11px] italic text-slate-400">{item.note}</span>}
             {item.promotionNameSnapshot && (
@@ -132,7 +133,7 @@ export function OrderCartPanel({
         ))}
       </div>
 
-      <div className="mt-2 border-t border-slate-700 pt-2 text-sm text-slate-300">
+      <div className="mt-2 border-t border-slate-700 pt-4 text-sm text-slate-300">
         <Row label="Subtotal" value={order.subtotalCents} />
         {order.discountCents > 0 && <Row label="Descuentos" value={-order.discountCents} />}
         {order.billiardChargeCents > 0 && <Row label="Billar" value={order.billiardChargeCents} />}
@@ -145,7 +146,7 @@ export function OrderCartPanel({
             <button
               onClick={() => setShowPay(true)}
               disabled={activeItems.length === 0 || busy}
-              className="touch-target w-full rounded-md bg-emerald-600 font-semibold text-white hover:bg-emerald-500 disabled:opacity-40"
+              className="touch-target w-full rounded-xl border border-blue-500 bg-blue-700 font-semibold text-white hover:bg-blue-600 disabled:opacity-40"
             >
               Cobrar {formatMoney(order.totalCents)}
             </button>

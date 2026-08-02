@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 /** Iconos de navegación centralizados (lucide-react) para mantener consistencia visual. */
-export const NAV_ICONS: Record<string, LucideIcon> = {
+export const NAV_ICONS = {
   home: Home,
   quickSale: Zap,
   tables: UtensilsCrossed,
@@ -28,4 +28,4 @@ export const NAV_ICONS: Record<string, LucideIcon> = {
   audit: ClipboardList,
   users: Users,
   settings: Settings,
-};
+} satisfies Record<string, LucideIcon>;

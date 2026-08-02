@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Menu, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { useAuthStore } from "../store/auth.store";
 import { fetchProducts } from "../lib/catalogApi";
 import { fetchTables } from "../lib/tablesApi";
@@ -44,9 +44,9 @@ function HeaderSearch() {
   const hasResults = matchedProducts.length > 0 || matchedTables.length > 0;
 
   return (
-    <div ref={containerRef} className="relative w-full max-w-md">
-      <div className="flex items-center gap-2 rounded-lg bg-slate-800 px-3 py-2">
-        <Search className="h-4 w-4 shrink-0 text-slate-400" />
+    <div ref={containerRef} className="relative w-full max-w-[430px]">
+      <div className="header-search-control flex h-14 items-center gap-3 rounded-xl border border-slate-700 bg-[#0b1724] px-4">
+        <Search className="h-5 w-5 shrink-0 text-slate-400" />
         <input
           value={query}
           onChange={(e) => {
@@ -54,8 +54,8 @@ function HeaderSearch() {
             setOpen(true);
           }}
           onFocus={() => setOpen(true)}
-          placeholder="Buscar productos, mesas…"
-          className="w-full min-w-0 bg-transparent text-sm text-white placeholder:text-slate-500 outline-none"
+          placeholder="Buscar productos, mesas, clientes…"
+          className="w-full min-w-0 bg-transparent text-base text-white placeholder:text-slate-400 outline-none"
         />
       </div>
       {open && term && (
@@ -95,29 +95,22 @@ function HeaderSearch() {
   );
 }
 
-export function AppHeader({ onOpenMenu }: { onOpenMenu: () => void }) {
+export function AppHeader() {
   const user = useAuthStore((s) => s.user);
   const online = useOnlineStatus();
 
   return (
-    <header className="flex items-center gap-3 border-b border-slate-800 bg-slate-900 px-3 py-2 md:px-4">
-      <button
-        onClick={onOpenMenu}
-        className="touch-target flex items-center justify-center rounded-md text-slate-300 hover:text-white md:hidden"
-        aria-label="Abrir menú"
-      >
-        <Menu className="h-6 w-6" />
-      </button>
+    <header className="app-header flex min-h-24 items-center gap-3 border-b border-slate-800 bg-[#050e18] px-4 md:px-5">
       <div className="hidden flex-1 md:block">
         <HeaderSearch />
       </div>
       <div className="ml-auto flex items-center gap-2">
-        <span className="flex items-center gap-1.5 rounded-full bg-slate-800 px-3 py-1 text-xs font-medium text-slate-300">
+        <span className="flex items-center gap-2 rounded-xl border border-slate-700 bg-[#0b1724] px-4 py-3 text-sm font-medium text-slate-200">
           <span className={`h-2 w-2 rounded-full ${online ? "bg-emerald-500" : "bg-red-500"}`} />
           <span className="hidden sm:inline">{online ? "En línea" : "Sin conexión"}</span>
         </span>
         {user && (
-          <span className="hidden rounded-full bg-slate-800 px-3 py-1 text-xs font-medium text-slate-300 sm:inline">
+          <span className="hidden rounded-xl border border-slate-700 bg-[#0b1724] px-5 py-3 text-sm font-medium text-slate-200 sm:inline">
             {user.fullName} · {user.role}
           </span>
         )}

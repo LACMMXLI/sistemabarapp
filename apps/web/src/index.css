@@ -11,7 +11,9 @@ html {
 }
 
 body {
-  @apply bg-slate-950 text-slate-100;
+  @apply text-slate-100;
+  background: #020812;
+  font-family: Arial, "Segoe UI", sans-serif;
   overflow-x: hidden;
 }
 
@@ -30,4 +32,142 @@ body {
 :focus-visible {
   outline: 2px solid theme("colors.sky.400");
   outline-offset: 2px;
+}
+
+.product-grid-cards {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+@media (min-width: 1200px) and (max-height: 900px) {
+  .app-header {
+    min-height: 72px;
+  }
+
+  .header-search-control {
+    height: 48px;
+  }
+
+  .product-card {
+    min-height: 212px;
+  }
+
+  .product-image {
+    height: 128px;
+  }
+}
+
+.app-dock-shell {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  padding: 22px 8px 8px;
+  pointer-events: none;
+}
+
+.app-dock-shell::before {
+  position: absolute;
+  inset: auto 0 0;
+  height: 12px;
+  content: "";
+  pointer-events: auto;
+}
+
+.app-dock {
+  display: flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 8px;
+  border: 1px solid rgb(71 85 105 / 0.9);
+  border-radius: 18px;
+  background: rgb(7 17 29 / 0.94);
+  box-shadow: 0 18px 45px rgb(0 0 0 / 0.55);
+  backdrop-filter: blur(18px);
+  pointer-events: auto;
+}
+
+.dock-item {
+  flex: 0 0 auto;
+  transition: transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
+}
+
+.dock-item:hover,
+.dock-item:focus-visible {
+  transform: translateY(-7px) scale(1.12);
+}
+
+.dock-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  z-index: 2;
+  width: max-content;
+  max-width: 160px;
+  transform: translate(-50%, 5px);
+  padding: 5px 8px;
+  border: 1px solid rgb(71 85 105);
+  border-radius: 7px;
+  background: #0b1724;
+  color: white;
+  font-size: 12px;
+  line-height: 16px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.dock-item:hover .dock-tooltip,
+.dock-item:focus-visible .dock-tooltip {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+
+.dock-separator {
+  width: 1px;
+  height: 32px;
+  flex: 0 0 auto;
+  margin: 0 4px;
+  background: rgb(71 85 105);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .app-dock {
+    transform: translateY(calc(100% + 8px));
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .app-dock-shell:hover .app-dock,
+  .app-dock-shell:has(:focus-visible) .app-dock {
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 768px) {
+  .app-dock {
+    overflow: visible;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .app-main {
+    padding-bottom: 78px;
+  }
+}
+
+@media (max-width: 767px) {
+  .app-dock-shell {
+    padding-right: 4px;
+    padding-left: 4px;
+  }
+
+  .app-dock {
+    justify-content: flex-start;
+    border-radius: 14px;
+    padding: 6px;
+  }
 }

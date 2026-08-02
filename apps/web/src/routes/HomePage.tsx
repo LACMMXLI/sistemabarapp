@@ -24,7 +24,7 @@ export function HomePage() {
   const canViewReports = usePermission("REPORTS_VIEW");
 
   const { data: tables } = useQuery({ queryKey: ["tables"], queryFn: fetchTables, enabled: canViewTables });
-  const { data: sales } = useQuery({ queryKey: ["report-sales", "TODAY"], queryFn: () => fetchSalesReport("TODAY"), enabled: canViewReports });
+  const { data: sales } = useQuery({ queryKey: ["report-sales", "TODAY"], queryFn: () => fetchSalesReport({ preset: "TODAY" }), enabled: canViewReports });
 
   const occupied = tables?.filter((t) => t.status === "OCCUPIED" || t.status === "BILLIARD_ACTIVE").length ?? 0;
   const billiardActive = tables?.filter((t) => t.status === "BILLIARD_ACTIVE").length ?? 0;
