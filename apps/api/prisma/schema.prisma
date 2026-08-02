@@ -1,0 +1,453 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleName {
+  ADMIN
+  CAJERO
+  MESERO
+}
+
+enum DiningTableType {
+  STANDARD
+  BILLIARD
+}
+
+enum ProductType {
+  STANDARD
+  SERVICE
+  BILLIARD_SERVICE
+}
+
+enum OrderKind {
+  QUICK_SALE
+  TABLE
+}
+
+enum OrderStatus {
+  OPEN
+  PAYMENT_PENDING
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  TRANSFER
+}
+
+enum PaymentStatus {
+  COMPLETED
+  REVERSED
+}
+
+enum BilliardSessionStatus {
+  ACTIVE
+  PAUSED
+  FINISHED
+  CANCELLED
+}
+
+enum DiscountType {
+  FIXED_PRICE
+  PERCENTAGE
+}
+
+enum InventoryMovementType {
+  INITIAL
+  PURCHASE
+  ADJUSTMENT_IN
+  ADJUSTMENT_OUT
+  SALE
+  SALE_REVERSAL
+}
+
+enum CashShiftStatus {
+  OPEN
+  CLOSED
+}
+
+enum CashMovementType {
+  CASH_IN
+  CASH_OUT
+}
+
+model User {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  fullName     String
+  passwordHash String
+  role         RoleName
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  refreshTokens      RefreshToken[]
+  openedOrders       Order[]              @relation("OrderOpenedBy")
+  orderItemsAdded    OrderItem[]          @relation("OrderItemAddedBy")
+  cancelledItems     OrderItem[]          @relation("OrderItemCancelledBy")
+  paymentsRegistered Payment[]            @relation("PaymentRegisteredBy")
+  inventoryMovements InventoryMovement[]  @relation("InventoryMovementUser")
+  cashShiftsOpened   CashShift[]          @relation("CashShiftOpenedBy")
+  cashShiftsClosed   CashShift[]          @relation("CashShiftClosedBy")
+  cashMovements      CashMovement[]       @relation("CashMovementUser")
+  billiardStarted    BilliardSession[]    @relation("BilliardStartedBy")
+  billiardPaused     BilliardSession[]    @relation("BilliardPausedBy")
+  billiardResumed    BilliardSession[]    @relation("BilliardResumedBy")
+  billiardFinished   BilliardSession[]    @relation("BilliardFinishedBy")
+  auditLogs          AuditLog[]
+
+  @@index([role])
+}
+
+model RefreshToken {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  replacedBy String?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String
+  color     String?
+  icon      String?
+  sortOrder Int       @default(0)
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  products           Product[]
+  promotionCategories PromotionCategory[]
+
+  @@index([active, sortOrder])
+}
+
+model Product {
+  id                  String      @id @default(uuid())
+  name                String
+  description         String?
+  priceCents           Int
+  categoryId           String
+  category             Category    @relation(fields: [categoryId], references: [id])
+  sku                  String?     @unique
+  type                 ProductType @default(STANDARD)
+  imageUrl             String?
+  active               Boolean     @default(true)
+  tracksInventory      Boolean     @default(false)
+  stockDeductPerSale   Int         @default(1)
+  lowStockThreshold    Int         @default(5)
+  sortOrder            Int         @default(0)
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  inventory           Inventory?
+  orderItems           OrderItem[]
+  inventoryMovements   InventoryMovement[]
+  promotionProducts     PromotionProduct[]
+
+  @@index([categoryId, active])
+}
+
+model DiningTable {
+  id            String          @id @default(uuid())
+  name          String          @unique
+  type          DiningTableType
+  outOfService  Boolean         @default(false)
+  billiardRateId String?
+  billiardRate  BilliardRate?   @relation(fields: [billiardRateId], references: [id])
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  orders           Order[]
+  billiardSessions BilliardSession[]
+
+  @@index([type])
+}
+
+model Order {
+  id               String      @id @default(uuid())
+  kind             OrderKind
+  status           OrderStatus @default(OPEN)
+  tableId          String?
+  table            DiningTable? @relation(fields: [tableId], references: [id])
+  openedById       String
+  openedBy         User        @relation("OrderOpenedBy", fields: [openedById], references: [id])
+  openedAt         DateTime    @default(now())
+  paidAt           DateTime?
+  cancelledAt      DateTime?
+  cancelReason     String?
+  cancelledById    String?
+  subtotalCents    Int         @default(0)
+  discountCents    Int         @default(0)
+  billiardChargeCents Int      @default(0)
+  totalCents       Int         @default(0)
+  version          Int         @default(1)
+  creationKey      String?     @unique
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  items            OrderItem[]
+  payments         Payment[]
+  billiardSessions BilliardSession[]
+  inventoryMovements InventoryMovement[]
+
+  // Solo puede existir una orden OPEN por mesa (restricción parcial real en migración SQL).
+  @@index([tableId, status])
+  @@index([kind, status])
+  @@index([status, openedAt])
+}
+
+model OrderItem {
+  id                     String    @id @default(uuid())
+  orderId                String
+  order                  Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId              String
+  product                Product   @relation(fields: [productId], references: [id])
+  productNameSnapshot    String
+  basePriceCents         Int
+  appliedPriceCents      Int
+  discountCents          Int       @default(0)
+  promotionId            String?
+  promotion              Promotion? @relation(fields: [promotionId], references: [id])
+  promotionNameSnapshot  String?
+  quantity               Int
+  totalCents             Int
+  note                   String?
+  addedById              String
+  addedBy                User      @relation("OrderItemAddedBy", fields: [addedById], references: [id])
+  cancelledAt            DateTime?
+  cancelledById          String?
+  cancelledBy            User?     @relation("OrderItemCancelledBy", fields: [cancelledById], references: [id])
+  cancelReason           String?
+  idempotencyKey         String?
+  createdAt              DateTime  @default(now())
+  updatedAt               DateTime @updatedAt
+
+  inventoryMovements InventoryMovement[]
+
+  @@unique([orderId, idempotencyKey])
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Payment {
+  id             String        @id @default(uuid())
+  orderId        String
+  order          Order         @relation(fields: [orderId], references: [id])
+  status         PaymentStatus @default(COMPLETED)
+  totalCents     Int
+  changeCents    Int           @default(0)
+  idempotencyKey String        @unique
+  registeredById String
+  registeredBy   User          @relation("PaymentRegisteredBy", fields: [registeredById], references: [id])
+  shiftId        String?
+  shift          CashShift?    @relation(fields: [shiftId], references: [id])
+  createdAt      DateTime      @default(now())
+
+  details CashMovementPaymentDetail[]
+
+  @@index([orderId])
+  @@index([shiftId])
+}
+
+model CashMovementPaymentDetail {
+  id             String        @id @default(uuid())
+  paymentId      String
+  payment        Payment       @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  method         PaymentMethod
+  amountCents    Int
+  receivedCents  Int?
+
+  @@index([paymentId])
+}
+
+model BilliardRate {
+  id                   String   @id @default(uuid())
+  name                 String
+  pricePerHourCents    Int
+  pricePerMinuteCents  Int
+  minimumChargeCents   Int      @default(0)
+  active               Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  tables   DiningTable[]
+  sessions BilliardSession[]
+}
+
+model BilliardSession {
+  id                          String                @id @default(uuid())
+  tableId                     String
+  table                       DiningTable           @relation(fields: [tableId], references: [id])
+  orderId                     String
+  order                       Order                 @relation(fields: [orderId], references: [id])
+  rateId                      String
+  rate                        BilliardRate          @relation(fields: [rateId], references: [id])
+  status                      BilliardSessionStatus @default(ACTIVE)
+  appliedPricePerMinuteCents  Int
+  minimumChargeCents          Int
+  startedAt                   DateTime              @default(now())
+  accumulatedSeconds           Int                  @default(0)
+  currentSegmentStartedAt      DateTime?
+  finishedAt                  DateTime?
+  billedCents                 Int?
+  chargeIdempotencyKey        String?
+  startedById                 String
+  startedBy                   User                  @relation("BilliardStartedBy", fields: [startedById], references: [id])
+  pausedById                  String?
+  pausedBy                    User?                 @relation("BilliardPausedBy", fields: [pausedById], references: [id])
+  resumedById                 String?
+  resumedBy                   User?                 @relation("BilliardResumedBy", fields: [resumedById], references: [id])
+  finishedById                String?
+  finishedBy                  User?                 @relation("BilliardFinishedBy", fields: [finishedById], references: [id])
+  cancelReason                String?
+  createdAt                   DateTime              @default(now())
+  updatedAt                   DateTime              @updatedAt
+
+  // Solo una sesión ACTIVE o PAUSED por mesa (restricción parcial real en migración SQL).
+  @@index([tableId, status])
+  @@index([orderId])
+}
+
+model Promotion {
+  id             String       @id @default(uuid())
+  name           String
+  description    String?
+  active         Boolean      @default(true)
+  startDate      DateTime?
+  endDate        DateTime?
+  daysOfWeek     Int[]
+  startTime      String
+  endTime        String
+  discountType   DiscountType
+  discountValue  Int
+  priority       Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  products    PromotionProduct[]
+  categories  PromotionCategory[]
+  orderItems  OrderItem[]
+
+  @@index([active])
+}
+
+model PromotionProduct {
+  promotionId String
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([promotionId, productId])
+}
+
+model PromotionCategory {
+  promotionId String
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([promotionId, categoryId])
+}
+
+model Inventory {
+  productId    String   @id
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  currentStock Int      @default(0)
+  updatedAt    DateTime @updatedAt
+}
+
+model InventoryMovement {
+  id             String                @id @default(uuid())
+  productId      String
+  product        Product               @relation(fields: [productId], references: [id])
+  type           InventoryMovementType
+  quantity       Int
+  resultingStock Int
+  reason         String?
+  orderId        String?
+  order          Order?                @relation(fields: [orderId], references: [id])
+  orderItemId    String?
+  orderItem      OrderItem?            @relation(fields: [orderItemId], references: [id])
+  userId         String
+  user           User                  @relation("InventoryMovementUser", fields: [userId], references: [id])
+  createdAt      DateTime              @default(now())
+
+  @@index([productId, createdAt])
+}
+
+model CashRegister {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  shifts CashShift[]
+}
+
+model CashShift {
+  id                 String          @id @default(uuid())
+  registerId         String
+  register           CashRegister    @relation(fields: [registerId], references: [id])
+  status             CashShiftStatus @default(OPEN)
+  openingFloatCents  Int
+  openedById         String
+  openedBy           User            @relation("CashShiftOpenedBy", fields: [openedById], references: [id])
+  openedAt           DateTime        @default(now())
+  closedById         String?
+  closedBy           User?           @relation("CashShiftClosedBy", fields: [closedById], references: [id])
+  closedAt           DateTime?
+  countedCashCents   Int?
+  differenceCents    Int?
+  closeIdempotencyKey String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  movements CashMovement[]
+  payments  Payment[]
+
+  // Solo un turno OPEN por caja (restricción parcial real en migración SQL).
+  @@index([registerId, status])
+}
+
+model CashMovement {
+  id          String           @id @default(uuid())
+  shiftId     String
+  shift       CashShift        @relation(fields: [shiftId], references: [id])
+  type        CashMovementType
+  amountCents Int
+  reason      String
+  userId      String
+  user        User             @relation("CashMovementUser", fields: [userId], references: [id])
+  createdAt   DateTime         @default(now())
+
+  @@index([shiftId])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  action     String
+  entityType String
+  entityId   String?
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}

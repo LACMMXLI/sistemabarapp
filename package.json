@@ -1,0 +1,32 @@
+{
+  "name": "sistemabarapp",
+  "private": true,
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build:packages": "pnpm --filter @barapp/config build && pnpm --filter @barapp/contracts build",
+    "dev:api": "pnpm build:packages && pnpm --filter @barapp/api dev",
+    "dev:web": "pnpm build:packages && pnpm --filter @barapp/web dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r --if-present lint",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "prisma:generate": "pnpm --filter @barapp/api prisma:generate",
+    "prisma:migrate": "pnpm --filter @barapp/api prisma:migrate",
+    "prisma:seed": "pnpm --filter @barapp/api prisma:seed"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "@prisma/client",
+      "@prisma/engines",
+      "@swc/core",
+      "argon2",
+      "esbuild",
+      "prisma"
+    ]
+  }
+}
