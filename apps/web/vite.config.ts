@@ -9,9 +9,9 @@ export default defineConfig({
       registerType: "prompt",
       includeAssets: ["favicon.svg"],
       manifest: {
-        name: "Bar POS",
-        short_name: "Bar POS",
-        description: "Sistema POS para bar y mesas de billar",
+        name: "Las Cheladas de la Once — Sistema POS",
+        short_name: "Las Cheladas",
+        description: "Sistema POS para Las Cheladas de la Once",
         theme_color: "#0f172a",
         background_color: "#0f172a",
         display: "standalone",

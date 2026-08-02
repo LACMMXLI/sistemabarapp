@@ -50,6 +50,7 @@ export class TablesService {
         name: t.name,
         type: t.type,
         status,
+        capacity: t.capacity,
         outOfService: t.outOfService,
         billiardRateId: t.billiardRateId,
         activeOrderId: order?.id ?? null,
@@ -68,7 +69,7 @@ export class TablesService {
       throw new ApiException(409, ERROR_CODES.CONFLICT, "Ya existe una mesa con ese nombre.");
     }
     const table = await this.prisma.diningTable.create({
-      data: { name: input.name, type: input.type, billiardRateId: input.billiardRateId ?? null },
+      data: { name: input.name, type: input.type, capacity: input.capacity ?? null, billiardRateId: input.billiardRateId ?? null },
     });
     await recordAudit(this.prisma, { action: "TABLE_CREATE", entityType: "DiningTable", entityId: table.id, userId: actor.userId });
   }
@@ -80,7 +81,7 @@ export class TablesService {
     }
     await this.prisma.diningTable.update({
       where: { id },
-      data: { name: input.name, billiardRateId: input.billiardRateId, outOfService: input.outOfService },
+      data: { name: input.name, capacity: input.capacity, billiardRateId: input.billiardRateId, outOfService: input.outOfService },
     });
     await recordAudit(this.prisma, {
       action: "TABLE_UPDATE",

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { OrderDto } from "@barapp/contracts";
-import { cancelOrderItem, payOrder, updateOrderItemQuantity } from "../lib/ordersApi";
+import { cancelOrder, cancelOrderItem, payOrder, updateOrderItemQuantity } from "../lib/ordersApi";
 import { ApiError } from "../lib/api";
 import { usePermission } from "../hooks/usePermission";
 
@@ -9,11 +9,24 @@ function formatMoney(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-export function OrderCartPanel({ order, onPaid, onBack }: { order: OrderDto; onPaid: () => void; onBack?: () => void }) {
+export function OrderCartPanel({
+  order,
+  capacity,
+  onPaid,
+  onBack,
+  onCancelled,
+}: {
+  order: OrderDto;
+  capacity?: number | null;
+  onPaid: () => void;
+  onBack?: () => void;
+  onCancelled?: () => void;
+}) {
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const [showPay, setShowPay] = useState(false);
   const canPay = usePermission("ORDERS_PAY");
+  const canCancel = usePermission("ORDERS_CANCEL");
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["order", order.id] });
 
@@ -30,6 +43,15 @@ export function OrderCartPanel({ order, onPaid, onBack }: { order: OrderDto; onP
     onError: (err) => setError(err instanceof ApiError ? err.message : "No se pudo eliminar el producto."),
   });
 
+  const cancelOrderMutation = useMutation({
+    mutationFn: (reason: string) => cancelOrder(order.id, reason),
+    onSuccess: () => {
+      invalidate();
+      onCancelled?.();
+    },
+    onError: (err) => setError(err instanceof ApiError ? err.message : "No se pudo cancelar la orden."),
+  });
+
   const activeItems = order.items.filter((i) => !i.cancelledAt);
 
   return (
@@ -37,11 +59,14 @@ export function OrderCartPanel({ order, onPaid, onBack }: { order: OrderDto; onP
       <div className="mb-2 flex items-center justify-between">
         <div>
           <p className="text-sm font-semibold text-white">{order.tableName ?? "Venta rápida"}</p>
-          <p className="text-xs text-slate-400">{order.openedByName}</p>
+          <p className="text-xs text-slate-400">
+            {capacity ? `${capacity} personas · ` : ""}
+            {order.openedByName}
+          </p>
         </div>
         {onBack && (
           <button onClick={onBack} className="touch-target rounded-md bg-slate-800 px-3 text-sm text-slate-300">
-            Mesas
+            Cambiar mesa
           </button>
         )}
       </div>
@@ -57,9 +82,12 @@ export function OrderCartPanel({ order, onPaid, onBack }: { order: OrderDto; onP
         {activeItems.map((item) => (
           <div key={item.id} className="mb-2 rounded-md bg-slate-800 p-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-white">{item.productNameSnapshot}</span>
+              <span className="text-sm font-medium text-white">
+                {item.quantity} {item.productNameSnapshot}
+              </span>
               <span className="text-sm text-sky-300">{formatMoney(item.totalCents)}</span>
             </div>
+            {item.note && <span className="text-[11px] italic text-slate-400">{item.note}</span>}
             {item.promotionNameSnapshot && (
               <span className="text-[11px] text-emerald-400">Promo: {item.promotionNameSnapshot}</span>
             )}
@@ -80,11 +108,12 @@ export function OrderCartPanel({ order, onPaid, onBack }: { order: OrderDto; onP
                 +
               </button>
               <button
-                className="touch-target ml-auto rounded bg-red-900/60 px-3 text-xs text-red-200"
+                className="touch-target ml-auto flex h-9 w-9 items-center justify-center rounded bg-red-900/60 text-red-200"
                 disabled={order.status !== "OPEN"}
                 onClick={() => cancelItemMutation.mutate({ itemId: item.id, reason: "Retirado por el usuario" })}
+                aria-label={`Quitar ${item.productNameSnapshot}`}
               >
-                Quitar
+                🗑
               </button>
             </div>
           </div>
@@ -98,16 +127,39 @@ export function OrderCartPanel({ order, onPaid, onBack }: { order: OrderDto; onP
         <Row label="Total" value={order.totalCents} bold />
       </div>
 
-      {order.status === "OPEN" && canPay && (
-        <button
-          onClick={() => setShowPay(true)}
-          disabled={activeItems.length === 0}
-          className="touch-target mt-3 rounded-md bg-emerald-600 font-semibold text-white hover:bg-emerald-500 disabled:opacity-40"
-        >
-          Cobrar {formatMoney(order.totalCents)}
-        </button>
+      {order.status === "OPEN" && (
+        <div className="mt-3 space-y-2">
+          {canPay && (
+            <button
+              onClick={() => setShowPay(true)}
+              disabled={activeItems.length === 0}
+              className="touch-target w-full rounded-md bg-emerald-600 font-semibold text-white hover:bg-emerald-500 disabled:opacity-40"
+            >
+              Cobrar {formatMoney(order.totalCents)}
+            </button>
+          )}
+          <div className="flex gap-2">
+            {canCancel && (
+              <button
+                onClick={() => {
+                  const reason = window.prompt("Motivo de la cancelación:");
+                  if (reason) cancelOrderMutation.mutate(reason);
+                }}
+                className="touch-target flex-1 rounded-md bg-red-900/60 text-sm font-medium text-red-200"
+              >
+                Cancelar cuenta
+              </button>
+            )}
+            {onBack && (
+              <button onClick={onBack} className="touch-target flex-1 rounded-md bg-slate-800 text-sm text-slate-300">
+                Cambiar mesa
+              </button>
+            )}
+          </div>
+        </div>
       )}
       {order.status === "PAID" && <p className="mt-3 text-center font-semibold text-emerald-400">Pagada</p>}
+      {order.status === "CANCELLED" && <p className="mt-3 text-center font-semibold text-red-400">Cancelada</p>}
 
       {showPay && (
         <PayDialog

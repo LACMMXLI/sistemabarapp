@@ -38,46 +38,81 @@ export function ProductGrid({ onSelect, disabled }: { onSelect: (product: Produc
         onChange={(e) => setSearch(e.target.value)}
         className="mb-2 touch-target rounded-md bg-slate-800 px-3 text-white outline-none focus:ring-2 focus:ring-sky-500"
       />
-      <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
-        <CategoryChip label="Todas" active={categoryId === null} onClick={() => setCategoryId(null)} />
+      <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
+        <CategoryChip label="Todas" icon="🍹" active={categoryId === null} onClick={() => setCategoryId(null)} />
         {categories?.map((c: Category) => (
-          <CategoryChip key={c.id} label={c.name} active={categoryId === c.id} onClick={() => setCategoryId(c.id)} />
+          <CategoryChip key={c.id} label={c.name} icon={c.icon} active={categoryId === c.id} onClick={() => setCategoryId(c.id)} />
         ))}
       </div>
-      <div className="grid flex-1 grid-cols-2 gap-2 overflow-y-auto sm:grid-cols-3">
-        {filtered.map((product) => {
-          const outOfStock = product.stockStatus === "OUT_OF_STOCK";
-          const badge = STOCK_BADGE[product.stockStatus];
-          return (
-            <button
-              key={product.id}
-              disabled={disabled || outOfStock}
-              onClick={() => onSelect(product)}
-              className="touch-target flex flex-col items-start justify-between rounded-lg bg-slate-800 p-3 text-left hover:bg-slate-700 disabled:opacity-40"
-            >
-              <span className="text-sm font-semibold text-white">{product.name}</span>
-              <div className="mt-2 flex w-full items-center justify-between">
-                <span className="text-sm text-sky-300">{formatMoney(product.priceCents)}</span>
-                {badge && (
-                  <span className={`text-[10px] font-bold ${outOfStock ? "text-red-400" : "text-amber-400"}`}>{badge}</span>
-                )}
-              </div>
-            </button>
-          );
-        })}
+      <div className="grid flex-1 grid-cols-2 gap-3 overflow-y-auto sm:grid-cols-3 content-start">
+        {filtered.map((product) => (
+          <ProductCard key={product.id} product={product} disabled={disabled} onSelect={onSelect} />
+        ))}
       </div>
     </div>
   );
 }
 
-function CategoryChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function ProductCard({
+  product,
+  disabled,
+  onSelect,
+}: {
+  product: ProductOperational;
+  disabled?: boolean;
+  onSelect: (product: ProductOperational) => void;
+}) {
+  const outOfStock = product.stockStatus === "OUT_OF_STOCK";
+  const badge = STOCK_BADGE[product.stockStatus];
+  const isDisabled = disabled || outOfStock;
+
+  return (
+    <div className="overflow-hidden rounded-xl bg-slate-800">
+      <div className="flex h-24 items-center justify-center bg-slate-900/60">
+        {product.imageUrl ? (
+          <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
+        ) : (
+          <span className="text-3xl opacity-40">🍺</span>
+        )}
+      </div>
+      <div className="p-2.5">
+        <p className="truncate text-sm font-semibold text-white">{product.name}</p>
+        <div className="mt-1.5 flex items-center justify-between">
+          <span className="text-sm font-bold text-sky-300">{formatMoney(product.priceCents)}</span>
+          <button
+            disabled={isDisabled}
+            onClick={() => onSelect(product)}
+            aria-label={`Agregar ${product.name}`}
+            className="touch-target flex h-9 w-9 items-center justify-center rounded-full bg-sky-600 text-lg font-bold text-white hover:bg-sky-500 disabled:opacity-40"
+          >
+            +
+          </button>
+        </div>
+        {badge && <p className={`mt-1 text-[10px] font-bold ${outOfStock ? "text-red-400" : "text-amber-400"}`}>{badge}</p>}
+      </div>
+    </div>
+  );
+}
+
+function CategoryChip({
+  label,
+  icon,
+  active,
+  onClick,
+}: {
+  label: string;
+  icon: string | null;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       onClick={onClick}
-      className={`touch-target shrink-0 rounded-full px-4 text-sm font-medium ${
+      className={`touch-target flex shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-medium ${
         active ? "bg-sky-600 text-white" : "bg-slate-800 text-slate-300"
       }`}
     >
+      {icon && <span>{icon}</span>}
       {label}
     </button>
   );

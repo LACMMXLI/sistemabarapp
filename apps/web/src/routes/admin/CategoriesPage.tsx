@@ -7,6 +7,7 @@ export function CategoriesPage() {
   const queryClient = useQueryClient();
   const { data } = useQuery({ queryKey: ["categories-admin"], queryFn: fetchCategoriesAdmin });
   const [name, setName] = useState("");
+  const [icon, setIcon] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const invalidate = () => {
@@ -15,9 +16,10 @@ export function CategoriesPage() {
   };
 
   const createMutation = useMutation({
-    mutationFn: () => createCategory({ name, sortOrder: (data?.length ?? 0) + 1 }),
+    mutationFn: () => createCategory({ name, icon: icon || null, sortOrder: (data?.length ?? 0) + 1 }),
     onSuccess: () => {
       setName("");
+      setIcon("");
       invalidate();
     },
     onError: (err) => setError(err instanceof ApiError ? err.message : "No se pudo crear la categoría."),
@@ -32,6 +34,13 @@ export function CategoriesPage() {
     <div className="p-4">
       <h1 className="mb-4 text-lg font-semibold text-white">Categorías</h1>
       <div className="mb-4 flex gap-2">
+        <input
+          value={icon}
+          onChange={(e) => setIcon(e.target.value)}
+          placeholder="Ícono"
+          maxLength={4}
+          className="w-16 touch-target rounded-md bg-slate-800 px-3 text-center text-white"
+        />
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -50,7 +59,10 @@ export function CategoriesPage() {
       <div className="space-y-2">
         {data?.map((c) => (
           <div key={c.id} className="flex items-center justify-between rounded-md bg-slate-800 px-3 py-2">
-            <span className={c.active ? "text-white" : "text-slate-500 line-through"}>{c.name}</span>
+            <span className={c.active ? "text-white" : "text-slate-500 line-through"}>
+              {c.icon && <span className="mr-2">{c.icon}</span>}
+              {c.name}
+            </span>
             <button
               onClick={() => toggleMutation.mutate({ id: c.id, active: !c.active })}
               className="touch-target rounded-md bg-slate-700 px-3 text-sm text-slate-200"

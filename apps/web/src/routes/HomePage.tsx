@@ -6,6 +6,7 @@ import { useAuthStore } from "../store/auth.store";
 const TILES: { to: string; label: string; icon: string; permission: PermissionKey }[] = [
   { to: "/venta-rapida", label: "Venta rápida", icon: "⚡", permission: "QUICK_SALE" },
   { to: "/mesas", label: "Mesas", icon: "🍽️", permission: "TABLES_VIEW" },
+  { to: "/billar", label: "Billar", icon: "🎱", permission: "BILLIARD_OPERATE" },
   { to: "/inventario", label: "Inventario", icon: "📦", permission: "INVENTORY_VIEW_FULL" },
   { to: "/productos", label: "Productos", icon: "🛒", permission: "PRODUCTS_MANAGE" },
   { to: "/caja", label: "Caja", icon: "💰", permission: "CASH_VIEW_SHIFTS" },

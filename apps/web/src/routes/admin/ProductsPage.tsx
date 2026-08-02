@@ -11,6 +11,7 @@ export function ProductsPage() {
   const [name, setName] = useState("");
   const [priceInput, setPriceInput] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [tracksInventory, setTracksInventory] = useState(false);
   const [initialStock, setInitialStock] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +28,7 @@ export function ProductsPage() {
         name,
         priceCents: Math.round(parseFloat(priceInput || "0") * 100),
         categoryId,
+        imageUrl: imageUrl || undefined,
         type: "STANDARD",
         tracksInventory,
         stockDeductPerSale: 1,
@@ -37,6 +39,7 @@ export function ProductsPage() {
     onSuccess: () => {
       setName("");
       setPriceInput("");
+      setImageUrl("");
       setInitialStock(0);
       invalidate();
     },
@@ -62,6 +65,12 @@ export function ProductsPage() {
             </option>
           ))}
         </select>
+        <input
+          placeholder="URL de la foto (opcional)"
+          value={imageUrl}
+          onChange={(e) => setImageUrl(e.target.value)}
+          className="touch-target rounded-md bg-slate-800 px-3 text-white"
+        />
         <label className="flex touch-target items-center gap-2 text-sm text-slate-300">
           <input type="checkbox" checked={tracksInventory} onChange={(e) => setTracksInventory(e.target.checked)} />
           Controla inventario
@@ -97,6 +106,13 @@ export function ProductsPage() {
         <tbody>
           {products?.map((p) => (
             <tr key={p.id}>
+              <td className="w-10 py-1">
+                {p.imageUrl ? (
+                  <img src={p.imageUrl} alt="" className="h-8 w-8 rounded object-cover" />
+                ) : (
+                  <span className="inline-block h-8 w-8 rounded bg-slate-800 text-center text-xs leading-8">—</span>
+                )}
+              </td>
               <td className={p.active ? "" : "text-slate-500 line-through"}>{p.name}</td>
               <td className="text-right">${(p.priceCents / 100).toFixed(2)}</td>
               <td className="text-right">{p.currentStock ?? "—"}</td>

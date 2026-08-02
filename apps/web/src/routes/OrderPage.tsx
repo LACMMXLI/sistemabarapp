@@ -40,7 +40,12 @@ export function OrderPage() {
         {table?.type === "BILLIARD" && <div className="p-2"><BilliardControls table={table} orderId={order.id} /></div>}
         <OrderCartPanel
           order={order}
+          capacity={table?.capacity}
           onBack={() => navigate("/mesas")}
+          onCancelled={() => {
+            queryClient.invalidateQueries({ queryKey: ["tables"] });
+            navigate("/mesas");
+          }}
           onPaid={() => {
             queryClient.invalidateQueries({ queryKey: ["order", order.id] });
             queryClient.invalidateQueries({ queryKey: ["tables"] });

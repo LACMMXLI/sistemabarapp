@@ -29,6 +29,9 @@ export function App() {
         <Route element={<AppLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/mesas" element={<TablesPage />} />
+          <Route element={<ProtectedRoute permission="BILLIARD_OPERATE" />}>
+            <Route path="/billar" element={<TablesPage typeFilter="BILLIARD" />} />
+          </Route>
           <Route path="/ordenes/:orderId" element={<OrderPage />} />
           <Route path="/venta-rapida" element={<QuickSalePage />} />
           <Route element={<ProtectedRoute permission="INVENTORY_VIEW_FULL" />}>

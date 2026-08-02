@@ -166,6 +166,7 @@ model DiningTable {
   id            String          @id @default(uuid())
   name          String          @unique
   type          DiningTableType
+  capacity      Int?
   outOfService  Boolean         @default(false)
   billiardRateId String?
   billiardRate  BilliardRate?   @relation(fields: [billiardRateId], references: [id])

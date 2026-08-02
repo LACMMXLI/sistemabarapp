@@ -11,6 +11,7 @@ export const diningTableSchema = z.object({
   name: z.string(),
   type: tableTypeSchema,
   status: tableStatusSchema,
+  capacity: z.number().int().nullable(),
   outOfService: z.boolean(),
   billiardRateId: z.string().uuid().nullable(),
   activeOrderId: z.string().uuid().nullable(),
@@ -25,12 +26,14 @@ export type DiningTable = z.infer<typeof diningTableSchema>;
 export const createTableSchema = z.object({
   name: z.string().min(1).max(60),
   type: tableTypeSchema,
+  capacity: z.number().int().min(1).max(50).nullable().optional(),
   billiardRateId: z.string().uuid().nullable().optional(),
 });
 export type CreateTableInput = z.infer<typeof createTableSchema>;
 
 export const updateTableSchema = z.object({
   name: z.string().min(1).max(60).optional(),
+  capacity: z.number().int().min(1).max(50).nullable().optional(),
   billiardRateId: z.string().uuid().nullable().optional(),
   outOfService: z.boolean().optional(),
 });

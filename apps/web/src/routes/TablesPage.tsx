@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { DiningTable } from "@barapp/contracts";
+import type { DiningTable, DiningTableType } from "@barapp/contracts";
 import { TABLE_POLL_INTERVAL_MS } from "@barapp/config";
 import { fetchTables, openTable } from "../lib/tablesApi";
 import { createTable } from "../lib/adminApi";
@@ -32,19 +32,22 @@ function formatMoney(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-export function TablesPage() {
+export function TablesPage({ typeFilter }: { typeFilter?: DiningTableType }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const canManageTables = usePermission("TABLES_MANAGE");
   const [newTableName, setNewTableName] = useState("");
-  const [newTableType, setNewTableType] = useState<"STANDARD" | "BILLIARD">("STANDARD");
+  const [newTableType, setNewTableType] = useState<DiningTableType>(typeFilter ?? "STANDARD");
+  const [newTableCapacity, setNewTableCapacity] = useState("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["tables"],
     queryFn: fetchTables,
     refetchInterval: TABLE_POLL_INTERVAL_MS,
   });
+
+  const tables = typeFilter ? data?.filter((t) => t.type === typeFilter) : data;
 
   const openMutation = useMutation({
     mutationFn: openTable,
@@ -56,9 +59,15 @@ export function TablesPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: () => createTable({ name: newTableName, type: newTableType }),
+    mutationFn: () =>
+      createTable({
+        name: newTableName,
+        type: newTableType,
+        capacity: newTableCapacity ? Number(newTableCapacity) : null,
+      }),
     onSuccess: () => {
       setNewTableName("");
+      setNewTableCapacity("");
       queryClient.invalidateQueries({ queryKey: ["tables"] });
     },
     onError: (err) => setError(err instanceof ApiError ? err.message : "No se pudo crear la mesa."),
@@ -68,27 +77,38 @@ export function TablesPage() {
 
   return (
     <div className="p-4">
+      <h1 className="mb-4 text-lg font-semibold text-white">{typeFilter === "BILLIARD" ? "Billar" : "Mesas"}</h1>
       {error && (
         <div className="mb-4 rounded-md bg-red-900/60 px-4 py-2 text-sm text-red-200" onClick={() => setError(null)}>
           {error}
         </div>
       )}
       {canManageTables && (
-        <div className="mb-4 flex gap-2">
+        <div className="mb-4 flex flex-wrap gap-2">
           <input
             placeholder="Nombre de la mesa"
             value={newTableName}
             onChange={(e) => setNewTableName(e.target.value)}
             className="touch-target rounded-md bg-slate-800 px-3 text-white"
           />
-          <select
-            value={newTableType}
-            onChange={(e) => setNewTableType(e.target.value as "STANDARD" | "BILLIARD")}
-            className="touch-target rounded-md bg-slate-800 px-2 text-white"
-          >
-            <option value="STANDARD">Normal</option>
-            <option value="BILLIARD">Billar</option>
-          </select>
+          {!typeFilter && (
+            <select
+              value={newTableType}
+              onChange={(e) => setNewTableType(e.target.value as DiningTableType)}
+              className="touch-target rounded-md bg-slate-800 px-2 text-white"
+            >
+              <option value="STANDARD">Normal</option>
+              <option value="BILLIARD">Billar</option>
+            </select>
+          )}
+          <input
+            placeholder="Personas"
+            type="number"
+            min={1}
+            value={newTableCapacity}
+            onChange={(e) => setNewTableCapacity(e.target.value)}
+            className="w-24 touch-target rounded-md bg-slate-800 px-3 text-white"
+          />
           <button
             disabled={!newTableName || createMutation.isPending}
             onClick={() => createMutation.mutate()}
@@ -99,7 +119,7 @@ export function TablesPage() {
         </div>
       )}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-        {data?.map((table) => (
+        {tables?.map((table) => (
           <TableCard key={table.id} table={table} onTap={() => !table.outOfService && openMutation.mutate(table.id)} />
         ))}
       </div>
@@ -124,7 +144,10 @@ function TableCard({ table, onTap }: { table: DiningTable; onTap: () => void }) 
       disabled={table.outOfService}
       className={`touch-target flex flex-col items-start gap-1 rounded-lg border-2 p-3 text-left ${STATUS_STYLES[table.status]}`}
     >
-      <span className="text-base font-bold text-white">{table.name}</span>
+      <div className="flex w-full items-center justify-between">
+        <span className="text-base font-bold text-white">{table.name}</span>
+        {table.capacity !== null && <span className="text-[11px] text-slate-400">{table.capacity} pers.</span>}
+      </div>
       <span className="text-xs text-slate-300">{STATUS_LABELS[table.status]}</span>
       {table.billiardElapsedSeconds !== null && (
         <span className="text-sm font-mono text-amber-300">{formatElapsed(elapsed)}</span>
