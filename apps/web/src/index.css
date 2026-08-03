@@ -76,6 +76,28 @@ body {
   pointer-events: auto;
 }
 
+.dock-handle {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  z-index: 1;
+  display: flex;
+  height: 24px;
+  transform: translateX(-50%);
+  align-items: center;
+  gap: 4px;
+  padding: 0 14px;
+  border: 1px solid rgb(71 85 105);
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  background: #0b1724;
+  color: rgb(226 232 240);
+  font-size: 12px;
+  font-weight: 600;
+  pointer-events: auto;
+  transition: opacity 120ms ease;
+}
+
 .app-dock {
   display: flex;
   max-width: 100%;
@@ -143,7 +165,7 @@ body {
 
   .app-dock-shell:hover .app-dock,
   .app-dock-shell:has(:focus-visible) .app-dock {
-    transform: translateY(0);
+    transform: translateY(-16px);
   }
 }
 
@@ -154,6 +176,10 @@ body {
 }
 
 @media (hover: none), (pointer: coarse) {
+  .dock-handle {
+    display: none;
+  }
+
   .app-main {
     padding-bottom: 78px;
   }

@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { LogOut, type LucideIcon } from "lucide-react";
+import { ChevronUp, LogOut, type LucideIcon } from "lucide-react";
 import type { PermissionKey } from "@barapp/config";
 import { usePermission } from "../hooks/usePermission";
 import { useLogout } from "../hooks/useAuth";
@@ -55,6 +55,10 @@ export function Sidebar() {
 
   return (
     <div className="app-dock-shell" aria-label="Menú autoocultable">
+      <div className="dock-handle" aria-hidden="true">
+        <ChevronUp className="h-4 w-4" />
+        <span>Menú</span>
+      </div>
       <nav className="app-dock" aria-label="Navegación principal">
         {NAV_ITEMS.map((item) => <DockLink key={item.to} item={item} />)}
         <span className="dock-separator" aria-hidden="true" />
