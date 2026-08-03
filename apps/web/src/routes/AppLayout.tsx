@@ -8,7 +8,7 @@ export function AppLayout() {
     <div className="flex h-screen min-w-0 flex-col overflow-hidden">
       <OfflineBanner />
       <AppHeader />
-      <main className="app-main min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-[#020812]">
+      <main className="app-main min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-background">
         <Outlet />
       </main>
       <Sidebar />

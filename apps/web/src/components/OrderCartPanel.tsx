@@ -60,18 +60,18 @@ export function OrderCartPanel({
   const activeItems = order.items.filter((i) => !i.cancelledAt);
 
   return (
-    <div className="order-cart flex h-full min-h-0 flex-col bg-[#07111d] p-3">
-      <p className="mb-4 text-lg font-semibold text-white">Cuenta actual</p>
-      <div className="mb-4 flex items-center justify-between rounded-xl border border-slate-700 bg-[#0b1724] p-3">
+    <section className="order-cart flex h-full min-h-0 flex-col bg-surface p-md">
+      <h1 className="mb-lg text-xl font-semibold text-text">Cuenta actual</h1>
+      <div className="mb-lg flex items-center justify-between rounded-2xl border border-border bg-surfaceLight p-md shadow-md">
         <div>
-          <p className="text-base font-semibold text-white">{order.tableName ?? "Venta rápida"}</p>
-          <p className="text-xs text-slate-400">
+          <p className="text-base font-semibold text-text">{order.tableName ?? "Venta rápida"}</p>
+          <p className="text-xs text-textMuted">
             {capacity ? `${capacity} personas · ` : ""}
             {order.openedByName}
           </p>
         </div>
         {onBack && (
-          <button onClick={onBack} className="touch-target rounded-md bg-slate-800 px-3 text-sm text-slate-300">
+          <button onClick={onBack} className="touch-target rounded-xl bg-background px-md text-sm text-textMuted">
             Cambiar mesa
           </button>
         )}
@@ -80,7 +80,7 @@ export function OrderCartPanel({
       {error && (
         <button
           type="button"
-          className="mb-2 flex items-center justify-between gap-2 rounded-md bg-red-900/60 px-3 py-2 text-left text-xs text-red-200"
+          className="mb-sm flex items-center justify-between gap-sm rounded-xl bg-error p-md text-left text-xs text-white"
           onClick={() => setError(null)}
         >
           <span>{error}</span>
@@ -89,31 +89,31 @@ export function OrderCartPanel({
       )}
 
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {activeItems.length === 0 && <p className="text-sm text-slate-500">Sin productos agregados.</p>}
+        {activeItems.length === 0 && <p className="text-sm text-textMuted">Sin productos agregados.</p>}
         {activeItems.map((item) => (
-          <div key={item.id} className="mb-2 border-b border-slate-700/80 px-1 py-3">
+          <div key={item.id} className="border-b border-border py-md">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-white">
+              <span className="text-sm font-medium text-text">
                 {item.quantity} {item.productNameSnapshot}
               </span>
-              <span className="text-sm text-slate-200">{formatMoney(item.totalCents)}</span>
+              <span className="text-sm font-bold text-text">{formatMoney(item.totalCents)}</span>
             </div>
-            {item.note && <span className="text-[11px] italic text-slate-400">{item.note}</span>}
+            {item.note && <span className="text-[11px] italic text-textMuted">{item.note}</span>}
             {item.promotionNameSnapshot && (
-              <span className="text-[11px] text-emerald-400">Promo: {item.promotionNameSnapshot}</span>
+              <span className="text-[11px] text-success">Promo: {item.promotionNameSnapshot}</span>
             )}
             <div className="mt-1 flex items-center gap-2">
               <button
-                className="touch-target flex items-center justify-center rounded bg-slate-700 px-3 text-white disabled:opacity-40"
+                className="touch-target flex items-center justify-center rounded-xl bg-surfaceLight px-md text-text disabled:opacity-40"
                 disabled={order.status !== "OPEN" || busy}
                 aria-label="Disminuir cantidad"
                 onClick={() => qtyMutation.mutate({ itemId: item.id, quantity: Math.max(1, item.quantity - 1) })}
               >
                 <Minus className="h-4 w-4" />
               </button>
-              <span className="w-6 text-center text-white">{item.quantity}</span>
+              <span className="w-6 text-center text-text">{item.quantity}</span>
               <button
-                className="touch-target flex items-center justify-center rounded bg-slate-700 px-3 text-white disabled:opacity-40"
+                className="touch-target flex items-center justify-center rounded-xl bg-surfaceLight px-md text-text disabled:opacity-40"
                 disabled={order.status !== "OPEN" || busy}
                 aria-label="Aumentar cantidad"
                 onClick={() => qtyMutation.mutate({ itemId: item.id, quantity: item.quantity + 1 })}
@@ -121,7 +121,7 @@ export function OrderCartPanel({
                 <Plus className="h-4 w-4" />
               </button>
               <button
-                className="touch-target ml-auto flex h-9 w-9 items-center justify-center rounded bg-red-900/60 text-red-200 disabled:opacity-40"
+                className="touch-target ml-auto flex items-center justify-center rounded-xl bg-error/20 text-error disabled:opacity-40"
                 disabled={order.status !== "OPEN" || busy}
                 onClick={() => cancelItemMutation.mutate({ itemId: item.id, reason: "Retirado por el usuario" })}
                 aria-label={`Quitar ${item.productNameSnapshot}`}
@@ -133,7 +133,7 @@ export function OrderCartPanel({
         ))}
       </div>
 
-      <div className="mt-2 border-t border-slate-700 pt-4 text-sm text-slate-300">
+      <div className="mt-sm border-t border-border pt-lg text-sm text-textMuted">
         <Row label="Subtotal" value={order.subtotalCents} />
         {order.discountCents > 0 && <Row label="Descuentos" value={-order.discountCents} />}
         {order.billiardChargeCents > 0 && <Row label="Billar" value={order.billiardChargeCents} />}
@@ -141,12 +141,12 @@ export function OrderCartPanel({
       </div>
 
       {order.status === "OPEN" && (
-        <div className="mt-3 space-y-2">
+        <div className="mt-md space-y-sm">
           {canPay && (
             <button
               onClick={() => setShowPay(true)}
               disabled={activeItems.length === 0 || busy}
-              className="touch-target w-full rounded-xl border border-blue-500 bg-blue-700 font-semibold text-white hover:bg-blue-600 disabled:opacity-40"
+              className="h-14 w-full rounded-xl bg-primary text-base font-medium text-black shadow-sm hover:bg-primaryHover disabled:opacity-40"
             >
               Cobrar {formatMoney(order.totalCents)}
             </button>
@@ -156,21 +156,21 @@ export function OrderCartPanel({
               <button
                 onClick={() => setShowCancelDialog(true)}
                 disabled={busy}
-                className="touch-target flex-1 rounded-md bg-red-900/60 text-sm font-medium text-red-200 disabled:opacity-40"
+                className="h-14 flex-1 rounded-xl bg-error text-sm font-medium text-white shadow-sm disabled:opacity-40"
               >
                 Cancelar cuenta
               </button>
             )}
             {onBack && (
-              <button onClick={onBack} className="touch-target flex-1 rounded-md bg-slate-800 text-sm text-slate-300">
+              <button onClick={onBack} className="h-14 flex-1 rounded-xl bg-surfaceLight text-sm font-medium text-text">
                 Cambiar mesa
               </button>
             )}
           </div>
         </div>
       )}
-      {order.status === "PAID" && <p className="mt-3 text-center font-semibold text-emerald-400">Pagada</p>}
-      {order.status === "CANCELLED" && <p className="mt-3 text-center font-semibold text-red-400">Cancelada</p>}
+      {order.status === "PAID" && <p className="mt-md text-center font-semibold text-success">Pagada</p>}
+      {order.status === "CANCELLED" && <p className="mt-md text-center font-semibold text-error">Cancelada</p>}
 
       {showPay && (
         <PayDialog
@@ -198,13 +198,13 @@ export function OrderCartPanel({
           onCancel={() => setShowCancelDialog(false)}
         />
       )}
-    </div>
+    </section>
   );
 }
 
 function Row({ label, value, bold }: { label: string; value: number; bold?: boolean }) {
   return (
-    <div className={`flex justify-between ${bold ? "text-base font-bold text-white" : ""}`}>
+    <div className={`flex justify-between ${bold ? "mt-sm text-2xl font-bold text-text" : ""}`}>
       <span>{label}</span>
       <span>{formatMoney(value)}</span>
     </div>

@@ -66,7 +66,7 @@ export function BilliardControls({ table, orderId }: { table: DiningTable; order
   const estimateCents = session ? Math.max(Math.ceil(elapsed / 60) * session.appliedPricePerMinuteCents, session.minimumChargeCents) : 0;
 
   return (
-    <div className="mb-2 rounded-md bg-amber-950/50 p-3">
+    <div className="mb-sm rounded-xl border border-primary/40 bg-primary/10 p-md">
       {error && (
         <button type="button" className="mb-2 block text-left text-xs text-red-300" onClick={() => setError(null)}>
           {error}
@@ -74,27 +74,27 @@ export function BilliardControls({ table, orderId }: { table: DiningTable; order
       )}
       {!session && (
         <div>
-          <p className="mb-2 text-sm text-amber-200">Billar sin iniciar</p>
+          <p className="mb-sm text-sm text-primary">Billar sin iniciar</p>
           <div className="flex flex-wrap gap-2">
             {rates?.map((rate) => (
               <button
                 key={rate.id}
                 disabled={busy}
                 onClick={() => startMutation.mutate(rate.id)}
-                className="touch-target rounded-md bg-amber-600 px-3 text-sm font-medium text-white disabled:opacity-50"
+                className="touch-target rounded-xl bg-primary px-md text-sm font-medium text-black disabled:opacity-50"
               >
                 Iniciar · {rate.name}
               </button>
             ))}
-            {rates?.length === 0 && <p className="text-xs text-amber-300">No hay tarifas configuradas. Crea una en Configuración.</p>}
+            {rates?.length === 0 && <p className="text-xs text-primary">No hay tarifas configuradas. Crea una en Configuración.</p>}
           </div>
         </div>
       )}
       {session && (
         <div className="flex items-center justify-between">
           <div>
-            <p className="font-mono text-lg text-amber-300">{formatElapsed(elapsed)}</p>
-            <p className="text-xs text-amber-200">Estimado: ${(estimateCents / 100).toFixed(2)} · {session.status}</p>
+            <p className="font-mono text-lg text-primary">{formatElapsed(elapsed)}</p>
+            <p className="text-xs text-textMuted">Estimado: ${(estimateCents / 100).toFixed(2)} · {session.status}</p>
           </div>
           <div className="flex gap-2">
             {session.status === "ACTIVE" && (

@@ -26,8 +26,8 @@ export function QuickSalePage() {
   const canEdit = order.status === "OPEN";
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-1 md:grid-cols-[minmax(0,1fr)_260px] xl:grid-cols-[minmax(0,1fr)_280px]">
-      <div className="min-h-0 border-b border-slate-800 p-3 md:border-b-0 md:border-r lg:p-4">
+    <div className="grid min-h-full grid-cols-1 md:h-full md:min-h-0 md:grid-cols-[minmax(0,7fr)_minmax(280px,3fr)]">
+      <div className="min-h-[34rem] border-b border-border md:min-h-0 md:border-b-0 md:border-r">
         <ProductGrid
           hideSearch
           disabled={!canEdit}

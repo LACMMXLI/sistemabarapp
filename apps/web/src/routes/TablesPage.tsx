@@ -10,10 +10,10 @@ import { ApiError } from "../lib/api";
 import { usePermission } from "../hooks/usePermission";
 
 const STATUS_STYLES: Record<DiningTable["status"], string> = {
-  AVAILABLE: "bg-emerald-900/40 border-emerald-600",
-  OCCUPIED: "bg-red-900/40 border-red-600",
-  BILLIARD_ACTIVE: "bg-amber-900/40 border-amber-500",
-  OUT_OF_SERVICE: "bg-slate-800 border-slate-600 opacity-60",
+  AVAILABLE: "bg-success/10 border-success",
+  OCCUPIED: "bg-error/10 border-error",
+  BILLIARD_ACTIVE: "bg-primary/10 border-primary",
+  OUT_OF_SERVICE: "bg-surface border-border opacity-60",
 };
 
 const STATUS_LABELS: Record<DiningTable["status"], string> = {
@@ -85,8 +85,8 @@ export function TablesPage({ typeFilter }: { typeFilter?: DiningTableType }) {
   });
 
   return (
-    <div className="p-3 md:p-4">
-      <h1 className="mb-4 text-lg font-semibold text-white">{typeFilter === "BILLIARD" ? "Billar" : "Mesas"}</h1>
+    <div className="p-md md:p-lg">
+      <h1 className="mb-lg text-xl font-semibold text-text">{typeFilter === "BILLIARD" ? "Billar" : "Mesas"}</h1>
       {error && (
         <button type="button" className="mb-4 block w-full rounded-md bg-red-900/60 px-4 py-2 text-left text-sm text-red-200" onClick={() => setError(null)}>
           {error}
@@ -177,7 +177,7 @@ function TableCard({
   const elapsed = (table.billiardElapsedSeconds ?? 0) + (table.billiardStatus === "ACTIVE" ? tick : 0);
 
   return (
-    <div className={`relative overflow-hidden rounded-lg border-2 ${STATUS_STYLES[table.status]}`}>
+    <div className={`relative overflow-hidden rounded-2xl border-2 shadow-md ${STATUS_STYLES[table.status]}`}>
       {canManage && (
         <button
           onClick={(e) => {
@@ -197,15 +197,15 @@ function TableCard({
         className="touch-target flex w-full flex-col items-start gap-1 p-3 text-left"
       >
         <div className="flex w-full items-center justify-between pr-6">
-          <span className="text-base font-bold text-white">{table.name}</span>
-          {table.capacity !== null && <span className="text-[11px] text-slate-400">{table.capacity} pers.</span>}
+          <span className="text-base font-bold text-text">{table.name}</span>
+          {table.capacity !== null && <span className="text-[11px] text-textMuted">{table.capacity} pers.</span>}
         </div>
-        <span className="text-xs text-slate-300">{STATUS_LABELS[table.status]}</span>
+        <span className="text-xs text-textMuted">{STATUS_LABELS[table.status]}</span>
         {table.billiardElapsedSeconds !== null && (
-          <span className="text-sm font-mono text-amber-300">{formatElapsed(elapsed)}</span>
+          <span className="font-mono text-sm text-primary">{formatElapsed(elapsed)}</span>
         )}
         {table.orderTotalCents !== null && (
-          <span className="text-sm font-semibold text-white">{formatMoney(table.orderTotalCents)}</span>
+          <span className="text-sm font-semibold text-text">{formatMoney(table.orderTotalCents)}</span>
         )}
         {table.openedByName && (
           <span className="flex items-center gap-1 text-[11px] text-slate-400">

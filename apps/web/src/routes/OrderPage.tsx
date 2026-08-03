@@ -27,8 +27,8 @@ export function OrderPage() {
   const canEdit = order.status === "OPEN";
 
   return (
-    <div className="grid h-full grid-cols-1 md:grid-cols-[1fr_360px]">
-      <div className="border-b border-slate-800 p-3 md:border-b-0 md:border-r">
+    <div className="grid min-h-full grid-cols-1 md:h-full md:min-h-0 md:grid-cols-[minmax(0,7fr)_minmax(280px,3fr)]">
+      <div className="min-h-[34rem] border-b border-border md:min-h-0 md:border-b-0 md:border-r">
         <ProductGrid
           disabled={!canEdit}
           onSelect={(product) =>
@@ -36,8 +36,8 @@ export function OrderPage() {
           }
         />
       </div>
-      <div className="flex flex-col">
-        {table?.type === "BILLIARD" && <div className="p-2"><BilliardControls table={table} orderId={order.id} /></div>}
+      <div className="flex min-h-0 flex-col bg-surface">
+        {table?.type === "BILLIARD" && <div className="p-sm"><BilliardControls table={table} orderId={order.id} /></div>}
         <OrderCartPanel
           order={order}
           capacity={table?.capacity}

@@ -45,8 +45,8 @@ function HeaderSearch() {
 
   return (
     <div ref={containerRef} className="relative w-full max-w-[430px]">
-      <div className="header-search-control flex h-14 items-center gap-3 rounded-xl border border-slate-700 bg-[#0b1724] px-4">
-        <Search className="h-5 w-5 shrink-0 text-slate-400" />
+      <div className="header-search-control flex h-14 items-center gap-md rounded-xl border border-border bg-surface px-lg">
+        <Search className="h-5 w-5 shrink-0 text-textMuted" />
         <input
           value={query}
           onChange={(e) => {
@@ -55,7 +55,7 @@ function HeaderSearch() {
           }}
           onFocus={() => setOpen(true)}
           placeholder="Buscar productos, mesas, clientes…"
-          className="w-full min-w-0 bg-transparent text-base text-white placeholder:text-slate-400 outline-none"
+          className="w-full min-w-0 bg-transparent text-base text-text placeholder:text-textMuted outline-none"
         />
       </div>
       {open && term && (
@@ -100,17 +100,17 @@ export function AppHeader() {
   const online = useOnlineStatus();
 
   return (
-    <header className="app-header flex min-h-24 items-center gap-3 border-b border-slate-800 bg-[#050e18] px-4 md:px-5">
+    <header className="app-header flex min-h-24 items-center gap-md border-b border-border bg-background px-lg md:px-xl">
       <div className="hidden flex-1 md:block">
         <HeaderSearch />
       </div>
       <div className="ml-auto flex items-center gap-2">
-        <span className="flex items-center gap-2 rounded-xl border border-slate-700 bg-[#0b1724] px-4 py-3 text-sm font-medium text-slate-200">
-          <span className={`h-2 w-2 rounded-full ${online ? "bg-emerald-500" : "bg-red-500"}`} />
+        <span className="flex items-center gap-sm rounded-xl border border-border bg-surface px-lg py-md text-sm font-medium text-text">
+          <span className={`h-2 w-2 rounded-full ${online ? "bg-success" : "bg-error"}`} />
           <span className="hidden sm:inline">{online ? "En línea" : "Sin conexión"}</span>
         </span>
         {user && (
-          <span className="hidden rounded-xl border border-slate-700 bg-[#0b1724] px-5 py-3 text-sm font-medium text-slate-200 sm:inline">
+          <span className="hidden rounded-xl border border-border bg-surface px-xl py-md text-sm font-medium text-text sm:inline">
             {user.fullName} · {user.role}
           </span>
         )}

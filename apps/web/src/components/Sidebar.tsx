@@ -39,12 +39,12 @@ function DockLink({ item }: { item: NavItem }) {
       aria-label={item.label}
       title={item.label}
       className={({ isActive }) =>
-        `dock-item touch-target relative flex items-center justify-center rounded-xl border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 ${
-          isActive ? "border-blue-500 bg-blue-700 text-white" : "border-transparent text-slate-200 hover:bg-slate-700"
+        `dock-item touch-target relative flex items-center justify-center rounded-xl border transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${
+          isActive ? "border-primary bg-primary text-black" : "border-transparent text-text hover:bg-surfaceLight"
         }`
       }
     >
-      <Icon className={`h-6 w-6 ${item.to === "/venta-rapida" ? "text-amber-400" : ""}`} strokeWidth={1.8} />
+      <Icon className="h-6 w-6" strokeWidth={1.8} />
       <span className="dock-tooltip" role="tooltip">{item.label}</span>
     </NavLink>
   );
