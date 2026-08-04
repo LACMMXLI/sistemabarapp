@@ -248,7 +248,7 @@ function PayDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={onClose}>
-      <div role="dialog" aria-modal="true" className="w-full max-w-sm rounded-xl bg-slate-900 p-5" onClick={(e) => e.stopPropagation()}>
+      <div role="dialog" aria-modal="true" className="w-full max-w-sm rounded-xl !bg-slate-900 p-5" onClick={(e) => e.stopPropagation()}>
         <h2 className="mb-4 text-lg font-bold text-white">Cobrar {`$${(totalCents / 100).toFixed(2)}`}</h2>
         <div className="mb-4 flex gap-2">
           {(["CASH", "CARD", "TRANSFER"] as const).map((m) => (

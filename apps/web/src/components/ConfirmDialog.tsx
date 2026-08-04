@@ -47,7 +47,7 @@ export function ConfirmDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
-        className="w-full max-w-sm rounded-xl bg-slate-900 p-5"
+        className="w-full max-w-sm rounded-xl !bg-slate-900 p-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-start gap-3">

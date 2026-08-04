@@ -15,6 +15,25 @@ body {
   overflow-x: hidden;
 }
 
+/* Los tokens background/surface/surfaceLight son translúcidos a propósito
+   (se ve el fondo del bar detrás en todas las vistas); el desenfoque
+   mantiene el texto legible sin tener que tocar cada componente. */
+.bg-background,
+.bg-surface,
+.bg-surfaceLight {
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* bg-slate-900 se usa como panel de contenido en casi toda la app; se vuelve
+   translúcido para que el fondo se vea detrás, salvo donde se marque con
+   !bg-slate-900 (diálogos/modales, que deben quedar 100% opacos). */
+.bg-slate-900 {
+  background-color: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
 button {
   transition: transform 150ms ease, background-color 150ms ease, border-color 150ms ease, opacity 150ms ease;
 }

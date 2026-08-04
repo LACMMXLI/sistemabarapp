@@ -211,7 +211,7 @@ function PromotionFormDialog({
       <div
         role="dialog"
         aria-modal="true"
-        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl bg-slate-900 p-5"
+        className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl !bg-slate-900 p-5"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="mb-4 text-lg font-bold text-white">{promotion ? "Editar promoción" : "Nueva promoción"}</h2>

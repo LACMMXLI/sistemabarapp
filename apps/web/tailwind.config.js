@@ -4,9 +4,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "#0F172A",
-        surface: "#1E293B",
-        surfaceLight: "#334155",
+        background: "rgba(15, 23, 42, 0.88)",
+        surface: "rgba(30, 41, 59, 0.82)",
+        surfaceLight: "rgba(51, 65, 85, 0.8)",
         primary: "#F59E0B",
         primaryHover: "#D97706",
         secondary: "#38BDF8",

@@ -15,7 +15,7 @@ export function LoginPage() {
   return (
     <div className="flex h-screen items-center justify-center bg-slate-950">
       <form
-        className="w-full max-w-sm rounded-xl bg-slate-900 p-8 shadow-xl"
+        className="w-full max-w-sm rounded-xl !bg-slate-900 p-8 shadow-xl"
         onSubmit={(e) => {
           e.preventDefault();
           login.mutate({ username, password });

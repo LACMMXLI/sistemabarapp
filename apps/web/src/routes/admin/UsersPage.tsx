@@ -197,7 +197,7 @@ function EditUserDialog({ user, onClose, onSaved }: { user: UserPublic; onClose:
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4" onClick={onClose}>
-      <div role="dialog" aria-modal="true" className="w-full max-w-sm rounded-xl bg-slate-900 p-5" onClick={(e) => e.stopPropagation()}>
+      <div role="dialog" aria-modal="true" className="w-full max-w-sm rounded-xl !bg-slate-900 p-5" onClick={(e) => e.stopPropagation()}>
         <h2 className="mb-4 text-lg font-bold text-white">Editar {user.username}</h2>
 
         <label htmlFor="edit-fullname" className="mb-1 block text-sm text-slate-300">

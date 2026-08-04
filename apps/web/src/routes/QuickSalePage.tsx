@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCw, WifiOff } from "lucide-react";
 import type { ProductOperational } from "@barapp/contracts";
 import { createOrRecoverQuickSale } from "../lib/quickSaleApi";
 import { fetchOrder, addOrderItem, updateOrderItemQuantity } from "../lib/ordersApi";
@@ -24,17 +24,31 @@ export function QuickSalePage() {
   const [stockFilter, setStockFilter] = useState<StockFilter>("ALL");
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
 
-  const { data: bootstrapOrder } = useQuery({
+  const {
+    data: bootstrapOrder,
+    isError: bootstrapIsError,
+    error: bootstrapErrorObj,
+    refetch: refetchBootstrap,
+    isFetching: bootstrapFetching,
+  } = useQuery({
     queryKey: ["quick-sale-bootstrap"],
     queryFn: createOrRecoverQuickSale,
     staleTime: Infinity,
+    retry: 1,
   });
 
-  const { data: order } = useQuery({
+  const {
+    data: order,
+    isError: orderIsError,
+    error: orderErrorObj,
+    refetch: refetchOrder,
+    isFetching: orderFetching,
+  } = useQuery({
     queryKey: ["order", bootstrapOrder?.id],
     queryFn: () => fetchOrder(bootstrapOrder!.id),
     enabled: !!bootstrapOrder?.id,
     refetchInterval: ORDER_POLL_INTERVAL_MS,
+    retry: 1,
   });
 
   const { data: categories } = useQuery({ queryKey: ["categories"], queryFn: fetchCategories });
@@ -82,6 +96,27 @@ export function QuickSalePage() {
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : "No se pudo agregar el producto.");
     }
+  }
+
+  if (bootstrapIsError || orderIsError) {
+    const err = bootstrapIsError ? bootstrapErrorObj : orderErrorObj;
+    const message = err instanceof ApiError ? err.message : "No se pudo conectar con el servidor.";
+    return (
+      <div className="flex h-screen w-full flex-col items-center justify-center gap-3 bg-pos-bg px-6 text-center">
+        <WifiOff className="h-9 w-9 text-pos-textMuted" strokeWidth={1.5} />
+        <p className="text-sm font-semibold text-pos-textPrimary">No se pudo abrir la venta rápida</p>
+        <p className="max-w-sm text-xs text-pos-textMuted">{message}</p>
+        <button
+          type="button"
+          onClick={() => (bootstrapIsError ? refetchBootstrap() : refetchOrder())}
+          disabled={bootstrapFetching || orderFetching}
+          className="mt-2 flex h-11 items-center gap-2 rounded-posMd border border-pos-amber/40 bg-pos-amber/10 px-4 text-sm font-semibold text-pos-amber transition hover:bg-pos-amber/15 disabled:opacity-50"
+        >
+          <RefreshCw className={`h-4 w-4 ${bootstrapFetching || orderFetching ? "animate-spin" : ""}`} />
+          Reintentar
+        </button>
+      </div>
+    );
   }
 
   if (!order) {

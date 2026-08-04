@@ -79,6 +79,23 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   return (await res.json()) as T;
 }
 
+/**
+ * crypto.randomUUID() solo existe en contextos seguros (HTTPS o localhost).
+ * En una tablet accediendo por IP de red vía HTTP simple, no existe y rompía
+ * silenciosamente cualquier acción que necesitara una idempotency key (crear
+ * venta rápida, agregar ítems, cobrar, etc.). crypto.getRandomValues() sí
+ * funciona sin contexto seguro, así que se usa como base y Math.random()
+ * como último recurso si crypto no está disponible en absoluto.
+ */
+function randomId(): string {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+  if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  }
+  return `${Date.now().toString(16)}-${Math.random().toString(16).slice(2)}`;
+}
+
 export function newIdempotencyKey(prefix: string): string {
-  return `${prefix}-${crypto.randomUUID()}`;
+  return `${prefix}-${randomId()}`;
 }

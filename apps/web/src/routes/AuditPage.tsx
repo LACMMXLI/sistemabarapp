@@ -153,7 +153,7 @@ export function AuditPage() {
 
       {selected && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setSelected(null)}>
-          <div role="dialog" aria-modal="true" className="w-full max-w-md rounded-xl bg-slate-900 p-5" onClick={(e) => e.stopPropagation()}>
+          <div role="dialog" aria-modal="true" className="w-full max-w-md rounded-xl !bg-slate-900 p-5" onClick={(e) => e.stopPropagation()}>
             <div className="mb-3 flex items-start justify-between">
               <h2 className="text-base font-bold text-white">{describeAuditLog(selected.action, selected.entityType)}</h2>
               <button onClick={() => setSelected(null)} aria-label="Cerrar" className="text-slate-400 hover:text-white">
