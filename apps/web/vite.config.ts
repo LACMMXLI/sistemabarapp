@@ -30,6 +30,7 @@ export default defineConfig({
   ],
   server: {
     port: 5173,
+    host: true,
   },
   optimizeDeps: {
     // Los paquetes @barapp/* del workspace se compilan a CommonJS (para que

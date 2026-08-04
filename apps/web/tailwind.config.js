@@ -15,6 +15,22 @@ export default {
         text: "#FFFFFF",
         textMuted: "#94A3B8",
         border: "#334155",
+
+        pos: {
+          bg: "#07090b",
+          surface: "#0d1115",
+          surfaceElevated: "#12181d",
+          border: "rgba(255, 255, 255, 0.14)",
+          borderSoft: "rgba(255, 255, 255, 0.08)",
+          textPrimary: "#f5f7f8",
+          textSecondary: "#a8b0b7",
+          textMuted: "#707981",
+          amber: "#ffc400",
+          amberStrong: "#ffad00",
+          cyan: "#00bfe8",
+          danger: "#ff4b3e",
+          success: "#62d36b",
+        },
       },
       fontFamily: {
         sans: ["Inter", "Segoe UI", "sans-serif"],
@@ -25,6 +41,14 @@ export default {
         md: "12px",
         lg: "16px",
         xl: "20px",
+      },
+      borderRadius: {
+        posSm: "8px",
+        posMd: "12px",
+        posLg: "16px",
+      },
+      boxShadow: {
+        posPanel: "0 14px 34px rgba(0, 0, 0, 0.42)",
       },
     },
   },

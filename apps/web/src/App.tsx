@@ -27,6 +27,7 @@ export function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route element={<ProtectedRoute />}>
+        <Route path="/venta-rapida" element={<QuickSalePage />} />
         <Route element={<AppLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/mesas" element={<TablesPage />} />
@@ -34,7 +35,6 @@ export function App() {
             <Route path="/billar" element={<TablesPage typeFilter="BILLIARD" />} />
           </Route>
           <Route path="/ordenes/:orderId" element={<OrderPage />} />
-          <Route path="/venta-rapida" element={<QuickSalePage />} />
           <Route element={<ProtectedRoute permission="INVENTORY_VIEW_FULL" />}>
             <Route path="/inventario" element={<InventoryPage />} />
           </Route>

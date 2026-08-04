@@ -1,84 +1,120 @@
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import type { LucideIcon } from "lucide-react";
 import type { PermissionKey } from "@barapp/config";
 import { usePermission } from "../hooks/usePermission";
-import { useAuthStore } from "../store/auth.store";
-import { fetchTables } from "../lib/tablesApi";
-import { fetchSalesReport } from "../lib/reportsApi";
 import { NAV_ICONS } from "../lib/navIcons";
 
-const TILES: { to: string; label: string; icon: LucideIcon; permission: PermissionKey }[] = [
-  { to: "/venta-rapida", label: "Venta rápida", icon: NAV_ICONS.quickSale, permission: "QUICK_SALE" },
-  { to: "/mesas", label: "Mesas", icon: NAV_ICONS.tables, permission: "TABLES_VIEW" },
-  { to: "/billar", label: "Billar", icon: NAV_ICONS.billiard, permission: "BILLIARD_OPERATE" },
-  { to: "/inventario", label: "Inventario", icon: NAV_ICONS.inventory, permission: "INVENTORY_VIEW_FULL" },
-  { to: "/productos", label: "Productos", icon: NAV_ICONS.products, permission: "PRODUCTS_MANAGE" },
-  { to: "/caja", label: "Caja", icon: NAV_ICONS.cash, permission: "CASH_VIEW_SHIFTS" },
-  { to: "/reportes", label: "Reportes", icon: NAV_ICONS.reports, permission: "REPORTS_VIEW" },
+interface QuickTile {
+  to: string;
+  label: string;
+  icon: LucideIcon;
+  permission: PermissionKey;
+  accent: string;
+  bar: string;
+  glow: string;
+}
+
+const TILES: QuickTile[] = [
+  {
+    to: "/venta-rapida",
+    label: "Venta rápida",
+    icon: NAV_ICONS.quickSale,
+    permission: "QUICK_SALE",
+    accent: "text-amber-400",
+    bar: "bg-amber-400",
+    glow: "shadow-[0_0_12px_2px_rgba(251,191,36,0.55)]",
+  },
+  {
+    to: "/mesas",
+    label: "Mesas",
+    icon: NAV_ICONS.tables,
+    permission: "TABLES_VIEW",
+    accent: "text-sky-400",
+    bar: "bg-sky-400",
+    glow: "shadow-[0_0_12px_2px_rgba(56,189,248,0.55)]",
+  },
+  {
+    to: "/billar",
+    label: "Billar",
+    icon: NAV_ICONS.billiard,
+    permission: "BILLIARD_OPERATE",
+    accent: "text-violet-400",
+    bar: "bg-violet-400",
+    glow: "shadow-[0_0_12px_2px_rgba(167,139,250,0.55)]",
+  },
+  {
+    to: "/inventario",
+    label: "Inventario",
+    icon: NAV_ICONS.inventory,
+    permission: "INVENTORY_VIEW_FULL",
+    accent: "text-green-400",
+    bar: "bg-green-400",
+    glow: "shadow-[0_0_12px_2px_rgba(74,222,128,0.55)]",
+  },
+  {
+    to: "/productos",
+    label: "Productos",
+    icon: NAV_ICONS.products,
+    permission: "PRODUCTS_MANAGE",
+    accent: "text-orange-400",
+    bar: "bg-orange-400",
+    glow: "shadow-[0_0_12px_2px_rgba(251,146,60,0.55)]",
+  },
+  {
+    to: "/caja",
+    label: "Caja",
+    icon: NAV_ICONS.cash,
+    permission: "CASH_VIEW_SHIFTS",
+    accent: "text-cyan-400",
+    bar: "bg-cyan-400",
+    glow: "shadow-[0_0_12px_2px_rgba(34,211,238,0.55)]",
+  },
+  {
+    to: "/reportes",
+    label: "Reportes",
+    icon: NAV_ICONS.reports,
+    permission: "REPORTS_VIEW",
+    accent: "text-amber-400",
+    bar: "bg-amber-400",
+    glow: "shadow-[0_0_12px_2px_rgba(251,191,36,0.55)]",
+  },
 ];
 
-export function HomePage() {
-  const user = useAuthStore((s) => s.user);
-  const canViewTables = usePermission("TABLES_VIEW");
-  const canViewReports = usePermission("REPORTS_VIEW");
-
-  const { data: tables } = useQuery({ queryKey: ["tables"], queryFn: fetchTables, enabled: canViewTables });
-  const { data: sales } = useQuery({ queryKey: ["report-sales", "TODAY"], queryFn: () => fetchSalesReport({ preset: "TODAY" }), enabled: canViewReports });
-
-  const occupied = tables?.filter((t) => t.status === "OCCUPIED" || t.status === "BILLIARD_ACTIVE").length ?? 0;
-  const billiardActive = tables?.filter((t) => t.status === "BILLIARD_ACTIVE").length ?? 0;
-  const totalTables = tables?.length ?? 0;
-
-  return (
-    <div className="p-4 md:p-6">
-      <h1 className="mb-4 text-xl font-semibold text-white">Hola, {user?.fullName}</h1>
-
-      {(canViewTables || canViewReports) && (
-        <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {canViewTables && (
-            <>
-              <Stat label="Mesas ocupadas" value={`${occupied} / ${totalTables}`} />
-              <Stat label="Billar activo" value={String(billiardActive)} />
-            </>
-          )}
-          {canViewReports && (
-            <>
-              <Stat label="Ventas de hoy" value={sales ? `$${(sales.totalSalesCents / 100).toFixed(2)}` : "—"} />
-              <Stat label="Órdenes de hoy" value={sales ? String(sales.orderCount) : "—"} />
-            </>
-          )}
-        </div>
-      )}
-
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-        {TILES.map((tile) => (
-          <Tile key={tile.to} {...tile} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg bg-slate-900 p-3">
-      <p className="text-xl font-bold text-white">{value}</p>
-      <p className="text-xs text-slate-400">{label}</p>
-    </div>
-  );
-}
-
-function Tile({ to, label, icon: Icon, permission }: (typeof TILES)[number]) {
+function Tile({ to, label, icon: Icon, permission, accent, bar, glow }: QuickTile) {
   const allowed = usePermission(permission);
   if (!allowed) return null;
+
   return (
     <Link
       to={to}
-      className="flex touch-target flex-col items-center justify-center gap-2 rounded-xl bg-slate-900 p-6 text-center hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-400"
+      className="group flex min-w-0 touch-target flex-col items-center gap-1 rounded-xl border border-white/10 bg-black/40 px-1 py-2.5 backdrop-blur-sm transition hover:-translate-y-1 hover:border-white/25 hover:bg-black/55 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary sm:gap-2 sm:rounded-2xl sm:px-3 sm:py-5"
     >
-      <Icon className="h-7 w-7 text-sky-400" strokeWidth={1.75} />
-      <span className="text-sm font-medium text-slate-200">{label}</span>
+      <Icon className={`h-5 w-5 shrink-0 sm:h-7 sm:w-7 md:h-8 md:w-8 ${accent}`} strokeWidth={1.75} />
+      <span className="text-center text-[10px] font-medium leading-tight text-white sm:text-xs md:text-sm">{label}</span>
+      <span className={`h-[3px] w-6 rounded-full sm:w-9 md:w-10 ${bar} ${glow}`} />
     </Link>
+  );
+}
+
+export function HomePage() {
+  return (
+    <div className="flex h-full min-h-full w-full flex-col items-center justify-center gap-6 px-4 pb-20 pt-6 sm:gap-10 sm:pb-24 sm:pt-10">
+      <img
+        src="/brand/logo_cheladas.jpg"
+        alt="Las Cheladas de la 11"
+        className="w-[32.5%] max-w-[163px] select-none drop-shadow-[0_0_35px_rgba(0,0,0,0.65)] sm:max-w-[188px] md:max-w-[213px]"
+        style={{ mixBlendMode: "screen" }}
+        draggable={false}
+      />
+
+      <nav
+        aria-label="Accesos rápidos"
+        className="grid w-full max-w-[880px] grid-cols-7 gap-1 rounded-2xl border border-white/10 bg-black/35 p-2 shadow-[0_18px_45px_rgba(0,0,0,0.55)] backdrop-blur-md sm:gap-3 sm:p-3"
+      >
+        {TILES.map((tile) => (
+          <Tile key={tile.to} {...tile} />
+        ))}
+      </nav>
+    </div>
   );
 }

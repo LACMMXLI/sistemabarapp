@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { ChevronUp, LogOut, type LucideIcon } from "lucide-react";
 import type { PermissionKey } from "@barapp/config";
@@ -52,14 +53,37 @@ function DockLink({ item }: { item: NavItem }) {
 
 export function Sidebar() {
   const logout = useLogout();
+  const [open, setOpen] = useState(false);
+  const shellRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onOutside = (e: PointerEvent) => {
+      if (shellRef.current && !shellRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("pointerdown", onOutside);
+    return () => document.removeEventListener("pointerdown", onOutside);
+  }, [open]);
 
   return (
-    <div className="app-dock-shell" aria-label="Menú autoocultable">
-      <div className="dock-handle" aria-hidden="true">
-        <ChevronUp className="h-4 w-4" />
+    <div ref={shellRef} className="app-dock-shell" aria-label="Menú autoocultable">
+      <button
+        type="button"
+        className="dock-handle"
+        aria-expanded={open}
+        aria-controls="app-dock-nav"
+        onClick={() => setOpen((o) => !o)}
+      >
+        <ChevronUp className={`h-4 w-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
         <span>Menú</span>
-      </div>
-      <nav className="app-dock" aria-label="Navegación principal">
+      </button>
+      <nav
+        id="app-dock-nav"
+        className="app-dock"
+        aria-label="Navegación principal"
+        style={open ? { transform: "translateY(-16px)" } : undefined}
+        onClick={() => setOpen(false)}
+      >
         {NAV_ITEMS.map((item) => <DockLink key={item.to} item={item} />)}
         <span className="dock-separator" aria-hidden="true" />
         <button
