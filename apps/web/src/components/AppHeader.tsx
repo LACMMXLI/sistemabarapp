@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { LogOut, Maximize2, Minimize2 } from "lucide-react";
 import { useAuthStore } from "../store/auth.store";
 import { useLogout } from "../hooks/useAuth";
@@ -42,11 +42,17 @@ function useFullscreen() {
 }
 
 export function AppHeader() {
+  const { pathname } = useLocation();
   const user = useAuthStore((s) => s.user);
   const logout = useLogout();
   const online = useOnlineStatus();
   const fullscreen = useFullscreen();
   const HomeIcon = NAV_ICONS.home;
+  const pageHeading = pathname === "/mesas"
+    ? { title: "Mesas", description: "Consulta estados y abre las cuentas del servicio." }
+    : pathname === "/billar"
+      ? { title: "Billar", description: "Control de mesas, tiempo y cuentas de billar." }
+      : null;
 
   return (
     <header className="app-header relative z-10 flex min-h-24 items-center gap-md border-b border-white/10 bg-gradient-to-b from-white/15 via-white/5 to-transparent px-lg backdrop-blur-md md:px-xl">
@@ -63,6 +69,13 @@ export function AppHeader() {
       >
         <HomeIcon className="h-6 w-6" strokeWidth={1.8} />
       </NavLink>
+
+      {pageHeading && (
+        <div className="min-w-0">
+          <h1 className="truncate text-lg font-bold text-pos-textPrimary">{pageHeading.title}</h1>
+          <p className="hidden truncate text-xs text-pos-textSecondary sm:block">{pageHeading.description}</p>
+        </div>
+      )}
 
       <div className="ml-auto flex items-center gap-2">
         {fullscreen.supported && (

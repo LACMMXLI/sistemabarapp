@@ -188,7 +188,7 @@ body {
   scrollbar-color: rgb(112 121 129 / 0.75) transparent;
   border: 1px solid rgb(var(--pos-border) / 0.08);
   border-radius: var(--pos-radius-lg);
-  background: linear-gradient(to bottom, rgb(var(--pos-surface) / 0.95), rgb(var(--pos-bg) / 0.9));
+  background: linear-gradient(to bottom, rgb(var(--pos-surface) / 0.78), rgb(var(--pos-bg) / 0.68));
   color: rgb(var(--pos-text-primary));
   box-shadow: var(--pos-shadow-panel);
   backdrop-filter: blur(20px);
