@@ -13,7 +13,7 @@ export function AppLayout() {
         {isHome ? (
           <Outlet />
         ) : (
-          <div className="app-view-shell h-full overflow-y-auto rounded-posLg border border-pos-borderSoft bg-gradient-to-b from-pos-surface/95 via-pos-bg/90 to-pos-bg/95 text-pos-textPrimary shadow-posPanel backdrop-blur-xl">
+          <div className="app-view-shell h-full overflow-y-auto">
             <Outlet />
           </div>
         )}

@@ -42,12 +42,12 @@ export function ConfirmDialog({
   const canConfirm = !requireReason || reason.trim().length > 0;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4" onClick={onCancel}>
+    <div className="pos-modal-backdrop" onClick={onCancel}>
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
-        className="flex max-h-[calc(100dvh-2rem)] w-full max-w-sm flex-col overflow-hidden rounded-posLg border border-border !bg-pos-surface p-5 shadow-posXl"
+        className="pos-modal max-w-sm p-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-start gap-3">

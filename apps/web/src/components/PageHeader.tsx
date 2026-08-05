@@ -10,10 +10,10 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <header className="flex flex-col gap-3 border-b border-border/70 pb-4 sm:flex-row sm:items-center sm:justify-between">
+    <header className="pos-page-header">
       <div>
-        <h1 className="text-xl font-bold text-text">{title}</h1>
-        {description && <p className="mt-1 text-sm text-textMuted">{description}</p>}
+        <h1 className="pos-page-title">{title}</h1>
+        {description && <p className="pos-page-description">{description}</p>}
       </div>
       {action && <div className="shrink-0">{action}</div>}
     </header>

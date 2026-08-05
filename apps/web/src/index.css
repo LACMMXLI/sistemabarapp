@@ -2,6 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  color-scheme: dark;
+  --pos-bg: 7 9 11;
+  --pos-surface: 13 17 21;
+  --pos-surface-elevated: 18 24 29;
+  --pos-border: 255 255 255;
+  --pos-border-default: 47 50 52;
+  --pos-border-soft: 28 31 34;
+  --pos-text-primary: 245 247 248;
+  --pos-text-secondary: 168 176 183;
+  --pos-text-muted: 112 121 129;
+  --pos-amber: 255 196 0;
+  --pos-amber-strong: 255 173 0;
+  --pos-cyan: 0 191 232;
+  --pos-danger: 255 75 62;
+  --pos-success: 98 211 107;
+  --pos-radius-sm: 8px;
+  --pos-radius-md: 12px;
+  --pos-radius-lg: 16px;
+  --pos-shadow-control: 0 8px 20px rgb(0 0 0 / 0.18);
+  --pos-shadow-panel: 0 14px 34px rgb(0 0 0 / 0.42);
+  --pos-shadow-modal: 0 24px 64px rgb(0 0 0 / 0.58);
+  --pos-space-xs: 4px;
+  --pos-space-sm: 8px;
+  --pos-space-md: 12px;
+  --pos-space-lg: 16px;
+  --pos-space-xl: 20px;
+  --pos-font-sans: Inter, "Segoe UI", sans-serif;
+}
+
 html, body, #root {
   height: 100%;
 }
@@ -13,6 +43,124 @@ html {
 body {
   @apply bg-background font-sans text-text;
   overflow-x: hidden;
+}
+
+.pos-app {
+  color: rgb(var(--pos-text-primary));
+}
+
+.app-background {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background-image: url("/brand/fondo.png");
+  background-position: center;
+  background-size: cover;
+}
+
+.app-background::before,
+.app-background::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.app-background::before {
+  background: linear-gradient(to bottom, rgb(0 0 0 / 0.55), rgb(0 0 0 / 0.2), rgb(0 0 0 / 0.7));
+}
+
+.app-background::after {
+  inset: auto 0 0;
+  height: 10rem;
+  background: linear-gradient(to top, rgb(0 0 0 / 0.8), transparent);
+}
+
+.pos-screen {
+  background: linear-gradient(to bottom, rgb(var(--pos-bg) / 0.7), rgb(var(--pos-bg) / 0.5), rgb(var(--pos-bg) / 0.8));
+  color: rgb(var(--pos-text-primary));
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.pos-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pos-space-md);
+  padding-bottom: var(--pos-space-lg);
+  border-bottom: 1px solid rgb(var(--pos-border-default) / 0.7);
+}
+
+.pos-page-title {
+  color: rgb(var(--pos-text-primary));
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 700;
+}
+
+.pos-page-description {
+  margin-top: var(--pos-space-xs);
+  color: rgb(var(--pos-text-secondary));
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.pos-modal-backdrop {
+  position: fixed;
+  z-index: 60;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--pos-space-md);
+  background: rgb(0 0 0 / 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.pos-modal {
+  display: flex;
+  max-height: calc(100dvh - 1.5rem);
+  width: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgb(var(--pos-border-default));
+  border-radius: var(--pos-radius-lg);
+  background: rgb(var(--pos-surface));
+  box-shadow: var(--pos-shadow-modal);
+}
+
+.pos-modal-header,
+.pos-modal-footer {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--pos-space-sm);
+  padding: var(--pos-space-md) var(--pos-space-lg);
+}
+
+.pos-modal-header {
+  justify-content: space-between;
+  border-bottom: 1px solid rgb(var(--pos-border-default));
+}
+
+.pos-modal-body {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--pos-space-lg);
+}
+
+.pos-modal-footer {
+  border-top: 1px solid rgb(var(--pos-border-default));
+  background: rgb(var(--pos-bg) / 0.6);
+}
+
+@media (min-width: 640px) {
+  .pos-page-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
 }
 
 /* Los tokens background/surface/surfaceLight son translúcidos a propósito
@@ -38,88 +186,119 @@ body {
    duplicar estilos en cada pantalla. */
 .app-view-shell {
   scrollbar-color: rgb(112 121 129 / 0.75) transparent;
+  border: 1px solid rgb(var(--pos-border) / 0.08);
+  border-radius: var(--pos-radius-lg);
+  background: linear-gradient(to bottom, rgb(var(--pos-surface) / 0.95), rgb(var(--pos-bg) / 0.9));
+  color: rgb(var(--pos-text-primary));
+  box-shadow: var(--pos-shadow-panel);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 .app-view-shell h1 {
-  color: #f5f7f8;
+  color: rgb(var(--pos-text-primary));
   font-weight: 700;
 }
 
 .app-view-shell h2,
 .app-view-shell h3 {
-  color: #f5f7f8;
+  color: rgb(var(--pos-text-primary));
 }
 
 .app-view-shell .bg-slate-900 {
-  border: 1px solid rgb(255 255 255 / 0.08);
-  border-radius: 16px;
-  background-color: rgb(13 17 21 / 0.9);
-  box-shadow: 0 14px 34px rgb(0 0 0 / 0.3);
+  border: 1px solid rgb(var(--pos-border) / 0.08);
+  border-radius: var(--pos-radius-lg);
+  background-color: rgb(var(--pos-surface) / 0.9);
+  box-shadow: var(--pos-shadow-panel);
 }
 
 .app-view-shell .bg-slate-800 {
-  border: 1px solid rgb(255 255 255 / 0.1);
-  border-radius: 12px;
-  background-color: rgb(18 24 29 / 0.92);
+  border: 1px solid rgb(var(--pos-border) / 0.1);
+  border-radius: var(--pos-radius-md);
+  background-color: rgb(var(--pos-surface-elevated) / 0.92);
 }
 
 .app-view-shell .bg-slate-700 {
-  border: 1px solid rgb(255 255 255 / 0.12);
-  border-radius: 12px;
-  background-color: rgb(255 255 255 / 0.08);
+  border: 1px solid rgb(var(--pos-border) / 0.12);
+  border-radius: var(--pos-radius-md);
+  background-color: rgb(var(--pos-border) / 0.08);
+}
+
+.app-view-shell .text-slate-200,
+.app-view-shell .text-slate-300 {
+  color: rgb(var(--pos-text-primary));
+}
+
+.app-view-shell .text-slate-400 {
+  color: rgb(var(--pos-text-secondary));
+}
+
+.app-view-shell .text-slate-500 {
+  color: rgb(var(--pos-text-muted));
+}
+
+.app-view-shell .text-red-200,
+.app-view-shell .text-red-300,
+.app-view-shell .text-red-400 {
+  color: rgb(var(--pos-danger));
+}
+
+.app-view-shell .text-emerald-200,
+.app-view-shell .text-emerald-400 {
+  color: rgb(var(--pos-success));
 }
 
 .app-view-shell input:not([type="checkbox"]):not([type="radio"]),
 .app-view-shell select,
 .app-view-shell textarea {
-  border: 1px solid rgb(255 255 255 / 0.14);
-  border-radius: 12px;
-  background-color: rgb(18 24 29 / 0.94);
-  color: #f5f7f8;
+  border: 1px solid rgb(var(--pos-border) / 0.14);
+  border-radius: var(--pos-radius-md);
+  background-color: rgb(var(--pos-surface-elevated) / 0.94);
+  color: rgb(var(--pos-text-primary));
 }
 
 .app-view-shell input::placeholder,
 .app-view-shell textarea::placeholder {
-  color: #707981;
+  color: rgb(var(--pos-text-muted));
 }
 
 .app-view-shell input:focus,
 .app-view-shell select:focus,
 .app-view-shell textarea:focus {
-  border-color: rgb(255 196 0 / 0.7);
+  border-color: rgb(var(--pos-amber) / 0.7);
   outline: none;
-  box-shadow: 0 0 0 3px rgb(255 196 0 / 0.12);
+  box-shadow: 0 0 0 3px rgb(var(--pos-amber) / 0.12);
 }
 
 .app-view-shell .bg-sky-600 {
-  border: 1px solid rgb(255 196 0 / 0.5);
-  border-radius: 12px;
-  background-color: #ffc400;
-  color: #07090b;
+  border: 1px solid rgb(var(--pos-amber) / 0.5);
+  border-radius: var(--pos-radius-md);
+  background-color: rgb(var(--pos-amber));
+  color: rgb(var(--pos-bg));
   font-weight: 700;
-  box-shadow: 0 8px 20px rgb(255 173 0 / 0.16);
+  box-shadow: 0 8px 20px rgb(var(--pos-amber-strong) / 0.16);
 }
 
 .app-view-shell .bg-sky-600:hover {
-  background-color: #ffad00;
+  background-color: rgb(var(--pos-amber-strong));
 }
 
 .app-view-shell table {
-  border: 1px solid rgb(255 255 255 / 0.08);
+  border: 1px solid rgb(var(--pos-border) / 0.08);
   border-collapse: separate;
   border-spacing: 0;
-  border-radius: 12px;
-  background: rgb(13 17 21 / 0.72);
+  border-radius: var(--pos-radius-md);
+  background: rgb(var(--pos-surface) / 0.72);
 }
 
 .app-view-shell thead {
-  background: rgb(255 255 255 / 0.04);
+  background: rgb(var(--pos-border) / 0.04);
 }
 
 .app-view-shell th,
 .app-view-shell td {
   padding: 10px 12px;
-  border-bottom: 1px solid rgb(255 255 255 / 0.06);
+  border-bottom: 1px solid rgb(var(--pos-border) / 0.06);
 }
 
 .app-view-shell tbody tr:last-child td {
@@ -127,7 +306,7 @@ body {
 }
 
 .app-view-shell tbody tr:hover {
-  background: rgb(255 255 255 / 0.035);
+  background: rgb(var(--pos-border) / 0.035);
 }
 
 button {

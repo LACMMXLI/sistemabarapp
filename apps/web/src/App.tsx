@@ -24,15 +24,8 @@ export function App() {
   }
 
   return (
-    <div className="relative h-screen overflow-hidden">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url(/brand/fondo.png)" }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/20 to-black/70" />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/80 to-transparent" />
-      </div>
+    <div className="pos-app relative h-screen overflow-hidden">
+      <div aria-hidden="true" className="app-background" />
 
       <div className="relative z-[1] h-full">
         <Routes>

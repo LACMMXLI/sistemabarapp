@@ -130,7 +130,7 @@ export function QuickSalePage() {
   const canEdit = order.status === "OPEN";
 
   return (
-    <div className="relative flex h-screen flex-col overflow-hidden bg-gradient-to-b from-pos-bg/70 via-pos-bg/50 to-pos-bg/80 text-pos-textPrimary backdrop-blur-sm">
+    <div className="pos-screen relative flex h-screen flex-col overflow-hidden">
       <div className="flex min-h-0 flex-1 flex-col">
         <OfflineBanner />
         <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[minmax(0,72%)_minmax(320px,28%)]">
