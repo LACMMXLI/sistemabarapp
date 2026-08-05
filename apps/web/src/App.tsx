@@ -24,44 +24,57 @@ export function App() {
   }
 
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route element={<ProtectedRoute />}>
-        <Route path="/venta-rapida" element={<QuickSalePage />} />
-        <Route element={<AppLayout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/mesas" element={<TablesPage />} />
-          <Route element={<ProtectedRoute permission="BILLIARD_OPERATE" />}>
-            <Route path="/billar" element={<TablesPage typeFilter="BILLIARD" />} />
+    <div className="relative h-screen overflow-hidden">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 bg-cover bg-center"
+        style={{ backgroundImage: "url(/brand/fondo.png)" }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/20 to-black/70" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/80 to-transparent" />
+      </div>
+
+      <div className="relative z-[1] h-full">
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/venta-rapida" element={<QuickSalePage />} />
+            <Route element={<AppLayout />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/mesas" element={<TablesPage />} />
+              <Route element={<ProtectedRoute permission="BILLIARD_OPERATE" />}>
+                <Route path="/billar" element={<TablesPage typeFilter="BILLIARD" />} />
+              </Route>
+              <Route path="/ordenes/:orderId" element={<OrderPage />} />
+              <Route element={<ProtectedRoute permission="INVENTORY_VIEW_FULL" />}>
+                <Route path="/inventario" element={<InventoryPage />} />
+              </Route>
+              <Route element={<ProtectedRoute permission="PRODUCTS_MANAGE" />}>
+                <Route path="/productos" element={<ProductsPage />} />
+                <Route path="/categorias" element={<CategoriesPage />} />
+              </Route>
+              <Route element={<ProtectedRoute permission="PROMOTIONS_MANAGE" />}>
+                <Route path="/promociones" element={<PromotionsPage />} />
+              </Route>
+              <Route element={<ProtectedRoute permission="USERS_MANAGE" />}>
+                <Route path="/usuarios" element={<UsersPage />} />
+              </Route>
+              <Route element={<ProtectedRoute permission="SETTINGS_MANAGE" />}>
+                <Route path="/configuracion" element={<SettingsPage />} />
+              </Route>
+              <Route element={<ProtectedRoute permission="CASH_VIEW_SHIFTS" />}>
+                <Route path="/caja" element={<CashPage />} />
+              </Route>
+              <Route element={<ProtectedRoute permission="REPORTS_VIEW" />}>
+                <Route path="/reportes" element={<ReportsPage />} />
+              </Route>
+              <Route element={<ProtectedRoute permission="AUDIT_VIEW" />}>
+                <Route path="/auditoria" element={<AuditPage />} />
+              </Route>
+            </Route>
           </Route>
-          <Route path="/ordenes/:orderId" element={<OrderPage />} />
-          <Route element={<ProtectedRoute permission="INVENTORY_VIEW_FULL" />}>
-            <Route path="/inventario" element={<InventoryPage />} />
-          </Route>
-          <Route element={<ProtectedRoute permission="PRODUCTS_MANAGE" />}>
-            <Route path="/productos" element={<ProductsPage />} />
-            <Route path="/categorias" element={<CategoriesPage />} />
-          </Route>
-          <Route element={<ProtectedRoute permission="PROMOTIONS_MANAGE" />}>
-            <Route path="/promociones" element={<PromotionsPage />} />
-          </Route>
-          <Route element={<ProtectedRoute permission="USERS_MANAGE" />}>
-            <Route path="/usuarios" element={<UsersPage />} />
-          </Route>
-          <Route element={<ProtectedRoute permission="SETTINGS_MANAGE" />}>
-            <Route path="/configuracion" element={<SettingsPage />} />
-          </Route>
-          <Route element={<ProtectedRoute permission="CASH_VIEW_SHIFTS" />}>
-            <Route path="/caja" element={<CashPage />} />
-          </Route>
-          <Route element={<ProtectedRoute permission="REPORTS_VIEW" />}>
-            <Route path="/reportes" element={<ReportsPage />} />
-          </Route>
-          <Route element={<ProtectedRoute permission="AUDIT_VIEW" />}>
-            <Route path="/auditoria" element={<AuditPage />} />
-          </Route>
-        </Route>
-      </Route>
-    </Routes>
+        </Routes>
+      </div>
+    </div>
   );
 }

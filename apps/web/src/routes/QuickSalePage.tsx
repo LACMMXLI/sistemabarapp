@@ -102,7 +102,7 @@ export function QuickSalePage() {
     const err = bootstrapIsError ? bootstrapErrorObj : orderErrorObj;
     const message = err instanceof ApiError ? err.message : "No se pudo conectar con el servidor.";
     return (
-      <div className="flex h-screen w-full flex-col items-center justify-center gap-3 bg-pos-bg px-6 text-center">
+      <div className="flex h-screen w-full flex-col items-center justify-center gap-3 bg-pos-bg/70 px-6 text-center backdrop-blur-sm">
         <WifiOff className="h-9 w-9 text-pos-textMuted" strokeWidth={1.5} />
         <p className="text-sm font-semibold text-pos-textPrimary">No se pudo abrir la venta rápida</p>
         <p className="max-w-sm text-xs text-pos-textMuted">{message}</p>
@@ -121,7 +121,7 @@ export function QuickSalePage() {
 
   if (!order) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-pos-bg">
+      <div className="flex h-screen w-full items-center justify-center bg-pos-bg/70 backdrop-blur-sm">
         <Loader2 className="h-8 w-8 animate-spin text-pos-textMuted" />
       </div>
     );
@@ -130,15 +130,8 @@ export function QuickSalePage() {
   const canEdit = order.status === "OPEN";
 
   return (
-    <div className="relative flex h-screen flex-col overflow-hidden bg-pos-bg text-pos-textPrimary">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-20 blur-md"
-        style={{ backgroundImage: "url(/brand/fondo.png)" }}
-      />
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-pos-bg/85" />
-
-      <div className="relative z-10 flex min-h-0 flex-1 flex-col">
+    <div className="relative flex h-screen flex-col overflow-hidden bg-gradient-to-b from-pos-bg/70 via-pos-bg/50 to-pos-bg/80 text-pos-textPrimary backdrop-blur-sm">
+      <div className="flex min-h-0 flex-1 flex-col">
         <OfflineBanner />
         <div className="grid min-h-0 flex-1 grid-cols-1 md:grid-cols-[minmax(0,72%)_minmax(320px,28%)]">
           <div className="flex min-h-0 flex-col border-b border-pos-borderSoft md:border-b-0 md:border-r">

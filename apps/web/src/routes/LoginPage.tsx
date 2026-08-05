@@ -13,7 +13,7 @@ export function LoginPage() {
   if (status === "authenticated") return <Navigate to="/" replace />;
 
   return (
-    <div className="flex h-screen items-center justify-center bg-slate-950">
+    <div className="flex h-screen items-center justify-center bg-slate-950/70 backdrop-blur-sm">
       <form
         className="w-full max-w-sm rounded-xl !bg-slate-900 p-8 shadow-xl"
         onSubmit={(e) => {
