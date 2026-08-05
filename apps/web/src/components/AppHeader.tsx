@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
-import { Maximize2, Minimize2 } from "lucide-react";
+import { LogOut, Maximize2, Minimize2 } from "lucide-react";
 import { useAuthStore } from "../store/auth.store";
+import { useLogout } from "../hooks/useAuth";
 import { NAV_ICONS } from "../lib/navIcons";
 
 function useOnlineStatus() {
@@ -42,6 +43,7 @@ function useFullscreen() {
 
 export function AppHeader() {
   const user = useAuthStore((s) => s.user);
+  const logout = useLogout();
   const online = useOnlineStatus();
   const fullscreen = useFullscreen();
   const HomeIcon = NAV_ICONS.home;
@@ -83,6 +85,16 @@ export function AppHeader() {
             {user.fullName} · {user.role}
           </span>
         )}
+        <button
+          type="button"
+          onClick={() => logout.mutate()}
+          disabled={logout.isPending}
+          aria-label="Cerrar sesión"
+          title="Cerrar sesión"
+          className="touch-target flex items-center justify-center rounded-xl border border-red-400/20 bg-red-500/10 text-red-200 transition hover:bg-red-500/25 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+        >
+          <LogOut className="h-5 w-5" />
+        </button>
       </div>
     </header>
   );

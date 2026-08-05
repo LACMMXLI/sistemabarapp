@@ -1,5 +1,4 @@
 import { Outlet } from "react-router-dom";
-import { Sidebar } from "../components/Sidebar";
 import { AppHeader } from "../components/AppHeader";
 import { OfflineBanner } from "../components/OfflineBanner";
 
@@ -11,7 +10,6 @@ export function AppLayout() {
       <main className="app-main relative z-[1] min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
         <Outlet />
       </main>
-      <Sidebar />
     </div>
   );
 }
