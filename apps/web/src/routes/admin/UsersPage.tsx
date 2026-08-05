@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, ShieldCheck, ShieldOff } from "lucide-react";
+import { Pencil, Plus, ShieldCheck, ShieldOff, UserRound } from "lucide-react";
 import type { Role, UserPublic } from "@barapp/contracts";
 import { fetchUsers, createUser, updateUser } from "../../lib/adminApi";
 import { ApiError } from "../../lib/api";
 import { useAuthStore } from "../../store/auth.store";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
+import { PageHeader } from "../../components/PageHeader";
+import { FormModal } from "../../components/FormModal";
 
 const ROLE_LABELS: Record<Role, string> = { ADMIN: "Administrador", CAJERO: "Cajero", MESERO: "Mesero" };
 
@@ -21,6 +23,7 @@ export function UsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<UserPublic | null>(null);
   const [deactivatingUser, setDeactivatingUser] = useState<UserPublic | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["users"] });
 
@@ -31,6 +34,7 @@ export function UsersPage() {
       setFullName("");
       setPassword("");
       setError(null);
+      setShowCreate(false);
       invalidate();
     },
     onError: (err) => setError(err instanceof ApiError ? err.message : "No se pudo crear el usuario."),
@@ -52,50 +56,8 @@ export function UsersPage() {
   });
 
   return (
-    <div className="p-3 md:p-4">
-      <h1 className="mb-4 text-lg font-semibold text-white">Usuarios</h1>
-
-      <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-5">
-        <div>
-          <label htmlFor="new-username" className="mb-1 block text-xs text-slate-400">
-            Usuario
-          </label>
-          <input id="new-username" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full touch-target rounded-md bg-slate-800 px-3 text-white" />
-        </div>
-        <div>
-          <label htmlFor="new-fullname" className="mb-1 block text-xs text-slate-400">
-            Nombre completo
-          </label>
-          <input id="new-fullname" value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full touch-target rounded-md bg-slate-800 px-3 text-white" />
-        </div>
-        <div>
-          <label htmlFor="new-password" className="mb-1 block text-xs text-slate-400">
-            Contraseña (mín. 8)
-          </label>
-          <input id="new-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full touch-target rounded-md bg-slate-800 px-3 text-white" />
-        </div>
-        <div>
-          <label htmlFor="new-role" className="mb-1 block text-xs text-slate-400">
-            Rol
-          </label>
-          <select id="new-role" value={role} onChange={(e) => setRole(e.target.value as Role)} className="w-full touch-target rounded-md bg-slate-800 px-2 text-white">
-            {Object.entries(ROLE_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="flex items-end">
-          <button
-            disabled={!username || !fullName || password.length < 8 || createMutation.isPending}
-            onClick={() => createMutation.mutate()}
-            className="touch-target w-full rounded-md bg-sky-600 px-4 text-white disabled:opacity-40"
-          >
-            Crear usuario
-          </button>
-        </div>
-      </div>
+    <div className="space-y-4 p-3 md:p-4">
+      <PageHeader title="Usuarios" description="Accesos, roles y estado del personal." action={<button onClick={() => setShowCreate(true)} className="touch-target flex items-center gap-2 rounded-pos bg-primary px-4 font-semibold text-black"><Plus className="h-4 w-4" /> Nuevo usuario</button>} />
 
       {error && (
         <button type="button" className="mb-3 block w-full rounded-md bg-red-900/60 px-3 py-2 text-left text-sm text-red-200" onClick={() => setError(null)}>
@@ -106,19 +68,20 @@ export function UsersPage() {
       {isLoading && <p className="text-slate-400">Cargando usuarios…</p>}
       {isError && <p className="text-red-400">No se pudieron cargar los usuarios.</p>}
 
-      <div className="space-y-2">
+      <div className="grid gap-3 lg:grid-cols-2">
         {data?.map((u) => {
           const isSelf = u.id === currentUser?.id;
           return (
-            <div key={u.id} className="flex items-center justify-between rounded-md bg-slate-800 px-3 py-2">
-              <div>
+            <div key={u.id} className="flex items-center justify-between gap-3 rounded-posLg border border-border bg-pos-surface/85 p-4 shadow-pos">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"><UserRound className="h-5 w-5" /></span><div>
                 <span className={u.active ? "text-white" : "text-slate-500 line-through"}>{u.fullName}</span>
-                <span className="ml-2 text-xs text-slate-400">
-                  @{u.username} · {ROLE_LABELS[u.role]}
+                <span className="block text-xs text-slate-400">
+                  @{u.username} · <span className="rounded-full bg-primary/10 px-2 py-0.5 text-primary">{ROLE_LABELS[u.role]}</span>
                   {!u.active && " · Inactivo"}
                   {isSelf && " · Tú"}
                 </span>
-              </div>
+              </div></div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setEditingUser(u)}
@@ -150,6 +113,8 @@ export function UsersPage() {
           );
         })}
       </div>
+
+      {showCreate && <FormModal title="Nuevo usuario" onClose={() => setShowCreate(false)} footer={<><button onClick={() => setShowCreate(false)} className="touch-target flex-1 rounded-pos border border-border text-textMuted">Cancelar</button><button disabled={!username || !fullName || password.length < 8 || createMutation.isPending} onClick={() => createMutation.mutate()} className="touch-target flex-1 rounded-pos bg-primary font-semibold text-black disabled:opacity-40">{createMutation.isPending ? "Guardando…" : "Crear usuario"}</button></>}><div className="space-y-3"><label className="block text-sm text-textMuted">Usuario<input autoComplete="off" value={username} onChange={(e) => setUsername(e.target.value)} className="mt-1 w-full touch-target rounded-pos border border-border bg-pos-bg px-3 text-text" /></label><label className="block text-sm text-textMuted">Nombre completo<input value={fullName} onChange={(e) => setFullName(e.target.value)} className="mt-1 w-full touch-target rounded-pos border border-border bg-pos-bg px-3 text-text" /></label><label className="block text-sm text-textMuted">Contraseña (mínimo 8 caracteres)<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 w-full touch-target rounded-pos border border-border bg-pos-bg px-3 text-text" /></label><label className="block text-sm text-textMuted">Rol<select value={role} onChange={(e) => setRole(e.target.value as Role)} className="mt-1 w-full touch-target rounded-pos border border-border bg-pos-bg px-3 text-text">{Object.entries(ROLE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>{error && <p className="text-sm text-error">{error}</p>}</div></FormModal>}
 
       {editingUser && (
         <EditUserDialog
@@ -196,9 +161,7 @@ function EditUserDialog({ user, onClose, onSaved }: { user: UserPublic; onClose:
   });
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4" onClick={onClose}>
-      <div role="dialog" aria-modal="true" className="w-full max-w-sm rounded-xl !bg-slate-900 p-5" onClick={(e) => e.stopPropagation()}>
-        <h2 className="mb-4 text-lg font-bold text-white">Editar {user.username}</h2>
+    <FormModal title={`Editar ${user.username}`} onClose={onClose} width="max-w-sm" footer={<><button onClick={onClose} disabled={saveMutation.isPending} className="touch-target flex-1 rounded-pos border border-border text-textMuted disabled:opacity-50">Cancelar</button><button onClick={() => saveMutation.mutate()} disabled={!fullName || (newPassword.trim().length > 0 && newPassword.trim().length < 8) || saveMutation.isPending} className="touch-target flex-1 rounded-pos bg-primary font-semibold text-black disabled:opacity-50">{saveMutation.isPending ? "Guardando…" : "Guardar"}</button></>}>
 
         <label htmlFor="edit-fullname" className="mb-1 block text-sm text-slate-300">
           Nombre completo
@@ -240,19 +203,6 @@ function EditUserDialog({ user, onClose, onSaved }: { user: UserPublic; onClose:
 
         {error && <p className="mb-3 text-sm text-red-400">{error}</p>}
 
-        <div className="flex gap-2">
-          <button onClick={onClose} disabled={saveMutation.isPending} className="touch-target flex-1 rounded-md bg-slate-800 text-slate-300 disabled:opacity-50">
-            Cancelar
-          </button>
-          <button
-            onClick={() => saveMutation.mutate()}
-            disabled={!fullName || (newPassword.trim().length > 0 && newPassword.trim().length < 8) || saveMutation.isPending}
-            className="touch-target flex-1 rounded-md bg-sky-600 font-semibold text-white disabled:opacity-50"
-          >
-            {saveMutation.isPending ? "Guardando…" : "Guardar"}
-          </button>
-        </div>
-      </div>
-    </div>
+    </FormModal>
   );
 }

@@ -47,7 +47,7 @@ export function ConfirmDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
-        className="w-full max-w-sm rounded-xl !bg-slate-900 p-5"
+        className="flex max-h-[calc(100dvh-2rem)] w-full max-w-sm flex-col overflow-hidden rounded-posLg border border-border !bg-pos-surface p-5 shadow-posXl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-start gap-3">
@@ -82,7 +82,7 @@ export function ConfirmDialog({
 
         {error && <p className="mb-3 text-sm text-red-400">{error}</p>}
 
-        <div className="flex gap-2">
+        <div className="sticky bottom-0 flex gap-2 bg-pos-surface pt-2">
           <button
             onClick={onCancel}
             disabled={pending}

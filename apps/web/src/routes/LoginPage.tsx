@@ -15,7 +15,7 @@ export function LoginPage() {
   return (
     <div className="flex h-screen items-center justify-center bg-slate-950/70 backdrop-blur-sm">
       <form
-        className="w-full max-w-sm rounded-xl !bg-slate-900 p-8 shadow-xl"
+        className="w-full max-w-sm rounded-posLg border border-pos-border bg-pos-surface/95 p-8 shadow-posPanel backdrop-blur-md"
         onSubmit={(e) => {
           e.preventDefault();
           login.mutate({ username, password });
@@ -24,7 +24,7 @@ export function LoginPage() {
         <h1 className="mb-6 text-center text-2xl font-bold text-white">Bar POS</h1>
         <label className="mb-1 block text-sm text-slate-300">Usuario</label>
         <input
-          className="mb-4 w-full touch-target rounded-md bg-slate-800 px-3 text-white outline-none focus:ring-2 focus:ring-sky-500"
+          className="mb-4 w-full touch-target rounded-posMd border border-pos-borderSoft bg-pos-surfaceElevated px-3 text-pos-textPrimary outline-none focus:border-pos-amber/60"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           autoFocus
@@ -33,7 +33,7 @@ export function LoginPage() {
         <label className="mb-1 block text-sm text-slate-300">Contraseña</label>
         <input
           type="password"
-          className="mb-4 w-full touch-target rounded-md bg-slate-800 px-3 text-white outline-none focus:ring-2 focus:ring-sky-500"
+          className="mb-4 w-full touch-target rounded-posMd border border-pos-borderSoft bg-pos-surfaceElevated px-3 text-pos-textPrimary outline-none focus:border-pos-amber/60"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="current-password"
@@ -46,7 +46,7 @@ export function LoginPage() {
         <button
           type="submit"
           disabled={login.isPending}
-          className="touch-target w-full rounded-md bg-sky-600 font-semibold text-white hover:bg-sky-500 disabled:opacity-50"
+          className="touch-target w-full rounded-posMd bg-pos-amber font-bold text-black hover:bg-pos-amberStrong disabled:opacity-50"
         >
           {login.isPending ? "Entrando..." : "Entrar"}
         </button>

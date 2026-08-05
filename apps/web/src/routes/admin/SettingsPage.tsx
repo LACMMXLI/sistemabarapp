@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Pencil, Plus, X } from "lucide-react";
+import { Building2, Pencil, Plus, Save } from "lucide-react";
 import type { BilliardRateDto } from "@barapp/contracts";
 import { fetchSettings, updateSettings } from "../../lib/settingsApi";
 import { createBilliardRate, fetchBilliardRates, updateBilliardRate } from "../../lib/billiardApi";
 import { ApiError } from "../../lib/api";
+import { PageHeader } from "../../components/PageHeader";
+import { FormModal } from "../../components/FormModal";
 
 export function SettingsPage() {
   const queryClient = useQueryClient();
@@ -32,11 +34,11 @@ export function SettingsPage() {
   });
 
   return (
-    <div className="p-3 md:p-4">
-      <h1 className="mb-4 text-lg font-semibold text-white">Configuración</h1>
-
-      <section className="mb-6 max-w-lg rounded-lg bg-slate-900 p-4">
-        <h2 className="mb-3 font-semibold text-white">Negocio</h2>
+    <div className="space-y-4 p-3 md:p-4">
+      <PageHeader title="Configuración" description="Identidad del negocio y tarifas operativas." />
+      <div className="grid items-start gap-4 lg:grid-cols-2">
+      <section className="rounded-posLg border border-border bg-pos-surface/85 p-4 shadow-pos">
+        <h2 className="mb-3 flex items-center gap-2 font-semibold text-text"><Building2 className="h-5 w-5 text-primary" /> Negocio</h2>
         {isLoading && <p className="text-sm text-slate-400">Cargando…</p>}
         {!isLoading && (
           <>
@@ -49,6 +51,10 @@ export function SettingsPage() {
               onChange={(e) => setBusinessName(e.target.value)}
               className="mb-3 w-full touch-target rounded-md bg-slate-800 px-3 text-white outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
             />
+
+            <div className="mb-4 flex min-h-24 items-center justify-center overflow-hidden rounded-pos border border-dashed border-border bg-pos-bg/45 p-3">
+              {logoUrl ? <img src={logoUrl} alt="Vista previa del logo" className="max-h-20 max-w-full object-contain" /> : <span className="text-sm text-textMuted">Vista previa del logo</span>}
+            </div>
 
             <label htmlFor="sidebar-name" className="mb-1 block text-sm text-slate-300">
               Nombre mostrado en el menú y encabezado
@@ -76,15 +82,16 @@ export function SettingsPage() {
             <button
               onClick={() => saveMutation.mutate()}
               disabled={!businessName || !sidebarName || saveMutation.isPending}
-              className="touch-target rounded-md bg-sky-600 px-4 text-white disabled:opacity-40"
+              className="touch-target flex items-center gap-2 rounded-pos bg-primary px-4 font-semibold text-black disabled:opacity-40"
             >
-              {saveMutation.isPending ? "Guardando…" : "Guardar cambios"}
+              <Save className="h-4 w-4" /> {saveMutation.isPending ? "Guardando…" : "Guardar cambios"}
             </button>
           </>
         )}
       </section>
 
       <BilliardRatesSection />
+      </div>
     </div>
   );
 }
@@ -97,6 +104,7 @@ function BilliardRatesSection() {
   const [minimumCharge, setMinimumCharge] = useState("0");
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["billiard-rates"] });
 
@@ -112,6 +120,7 @@ function BilliardRatesSection() {
       setPricePerHour("");
       setMinimumCharge("0");
       setError(null);
+      setShowCreate(false);
       invalidate();
     },
     onError: (err) => setError(err instanceof ApiError ? err.message : "No se pudo crear la tarifa."),
@@ -124,30 +133,8 @@ function BilliardRatesSection() {
   });
 
   return (
-    <section className="max-w-lg rounded-lg bg-slate-900 p-4">
-      <h2 className="mb-3 font-semibold text-white">Tarifas de billar</h2>
-
-      <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
-        <label className="text-xs text-slate-400 sm:col-span-1">
-          Nombre
-          <input value={name} onChange={(e) => setName(e.target.value)} className="mt-1 w-full touch-target rounded-md bg-slate-800 px-3 text-white" />
-        </label>
-        <label className="text-xs text-slate-400">
-          Precio por hora
-          <input value={pricePerHour} onChange={(e) => setPricePerHour(e.target.value)} inputMode="decimal" className="mt-1 w-full touch-target rounded-md bg-slate-800 px-3 text-white" />
-        </label>
-        <label className="text-xs text-slate-400">
-          Cargo mínimo
-          <input value={minimumCharge} onChange={(e) => setMinimumCharge(e.target.value)} inputMode="decimal" className="mt-1 w-full touch-target rounded-md bg-slate-800 px-3 text-white" />
-        </label>
-      </div>
-      <button
-        disabled={!name || !pricePerHour || createMutation.isPending}
-        onClick={() => createMutation.mutate()}
-        className="touch-target mb-4 flex items-center gap-2 rounded-md bg-sky-600 px-4 text-white disabled:opacity-40"
-      >
-        <Plus className="h-4 w-4" /> Crear tarifa
-      </button>
+    <section className="rounded-posLg border border-border bg-pos-surface/85 p-4 shadow-pos">
+      <div className="mb-3 flex items-center justify-between gap-3"><div><h2 className="font-semibold text-text">Tarifas de billar</h2><p className="text-xs text-textMuted">Precio por hora y cargo mínimo.</p></div><button onClick={() => setShowCreate(true)} className="touch-target flex items-center gap-2 rounded-pos bg-primary px-3 text-sm font-semibold text-black"><Plus className="h-4 w-4" /> Nueva</button></div>
 
       {error && <p className="mb-3 text-sm text-red-400">{error}</p>}
       {isLoading && <p className="text-sm text-slate-400">Cargando tarifas…</p>}
@@ -159,7 +146,7 @@ function BilliardRatesSection() {
           editingId === rate.id ? (
             <EditRateRow key={rate.id} rate={rate} onCancel={() => setEditingId(null)} onSaved={() => { setEditingId(null); invalidate(); }} />
           ) : (
-            <div key={rate.id} className="flex items-center justify-between rounded-md bg-slate-800 px-3 py-2 text-sm">
+            <div key={rate.id} className="flex items-center justify-between rounded-pos border border-border bg-pos-bg/45 p-3 text-sm">
               <div className={rate.active ? "text-white" : "text-slate-500 line-through"}>
                 <span className="font-medium">{rate.name}</span>
                 <span className="ml-2 text-xs text-slate-400">
@@ -181,6 +168,7 @@ function BilliardRatesSection() {
           ),
         )}
       </div>
+      {showCreate && <FormModal title="Nueva tarifa" onClose={() => setShowCreate(false)} footer={<><button onClick={() => setShowCreate(false)} className="touch-target flex-1 rounded-pos border border-border text-textMuted">Cancelar</button><button disabled={!name || !pricePerHour || createMutation.isPending} onClick={() => createMutation.mutate()} className="touch-target flex-1 rounded-pos bg-primary font-semibold text-black disabled:opacity-40">{createMutation.isPending ? "Guardando…" : "Crear tarifa"}</button></>}><div className="space-y-3"><label className="block text-sm text-textMuted">Nombre<input value={name} onChange={(e) => setName(e.target.value)} className="mt-1 w-full touch-target rounded-pos border border-border bg-pos-bg px-3 text-text" /></label><label className="block text-sm text-textMuted">Precio por hora<input value={pricePerHour} onChange={(e) => setPricePerHour(e.target.value)} inputMode="decimal" className="mt-1 w-full touch-target rounded-pos border border-border bg-pos-bg px-3 text-text" /></label><label className="block text-sm text-textMuted">Cargo mínimo<input value={minimumCharge} onChange={(e) => setMinimumCharge(e.target.value)} inputMode="decimal" className="mt-1 w-full touch-target rounded-pos border border-border bg-pos-bg px-3 text-text" /></label>{error && <p className="text-sm text-error">{error}</p>}</div></FormModal>}
     </section>
   );
 }
@@ -203,25 +191,13 @@ function EditRateRow({ rate, onCancel, onSaved }: { rate: BilliardRateDto; onCan
   });
 
   return (
-    <div className="rounded-md bg-slate-800 px-3 py-2">
-      <div className="mb-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+    <FormModal title={`Editar ${rate.name}`} onClose={onCancel} footer={<><button onClick={onCancel} className="touch-target flex-1 rounded-pos border border-border text-textMuted">Cancelar</button><button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="touch-target flex-1 rounded-pos bg-primary font-semibold text-black disabled:opacity-50">{saveMutation.isPending ? "Guardando…" : "Guardar"}</button></>}>
+      <div className="grid grid-cols-1 gap-3">
         <input value={name} onChange={(e) => setName(e.target.value)} className="touch-target rounded-md bg-slate-700 px-3 text-white" />
         <input value={pricePerHour} onChange={(e) => setPricePerHour(e.target.value)} inputMode="decimal" className="touch-target rounded-md bg-slate-700 px-3 text-white" />
         <input value={minimumCharge} onChange={(e) => setMinimumCharge(e.target.value)} inputMode="decimal" className="touch-target rounded-md bg-slate-700 px-3 text-white" />
       </div>
       {error && <p className="mb-2 text-xs text-red-400">{error}</p>}
-      <div className="flex gap-2">
-        <button
-          onClick={() => saveMutation.mutate()}
-          disabled={saveMutation.isPending}
-          className="touch-target flex items-center gap-1 rounded-md bg-emerald-700 px-3 text-sm text-white disabled:opacity-50"
-        >
-          <Check className="h-4 w-4" /> Guardar
-        </button>
-        <button onClick={onCancel} className="touch-target flex items-center gap-1 rounded-md bg-slate-700 px-3 text-sm text-white">
-          <X className="h-4 w-4" /> Cancelar
-        </button>
-      </div>
-    </div>
+    </FormModal>
   );
 }

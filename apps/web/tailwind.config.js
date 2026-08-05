@@ -4,17 +4,17 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: "rgba(15, 23, 42, 0.88)",
-        surface: "rgba(30, 41, 59, 0.82)",
-        surfaceLight: "rgba(51, 65, 85, 0.8)",
+        background: "rgba(7, 9, 11, 0.9)",
+        surface: "rgba(13, 17, 21, 0.9)",
+        surfaceLight: "rgba(18, 24, 29, 0.88)",
         primary: "#F59E0B",
         primaryHover: "#D97706",
-        secondary: "#38BDF8",
+        secondary: "#00BFE8",
         success: "#22C55E",
         error: "#EF4444",
         text: "#FFFFFF",
-        textMuted: "#94A3B8",
-        border: "#334155",
+        textMuted: "#A8B0B7",
+        border: "rgba(255, 255, 255, 0.14)",
 
         pos: {
           bg: "#07090b",

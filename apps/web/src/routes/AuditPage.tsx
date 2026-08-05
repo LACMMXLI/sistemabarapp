@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, History, Search } from "lucide-react";
 import type { AuditLogDto } from "@barapp/contracts";
 import { APP_TIMEZONE } from "@barapp/config";
 import { fetchAuditLog } from "../lib/auditApi";
 import { AUDIT_ACTION_LABELS, AUDIT_ENTITY_LABELS, describeAuditLog } from "../lib/auditLabels";
+import { PageHeader } from "../components/PageHeader";
+import { FormModal } from "../components/FormModal";
 
 const PAGE_SIZE = 25;
 
@@ -41,10 +43,10 @@ export function AuditPage() {
   const resetPage = () => setPage(1);
 
   return (
-    <div className="p-3 md:p-4">
-      <h1 className="mb-4 text-lg font-semibold text-white">Auditoría</h1>
+    <div className="space-y-4 p-3 md:p-4">
+      <PageHeader title="Auditoría" description="Historial de acciones administrativas y operativas." />
 
-      <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-5">
+      <div className="grid grid-cols-1 gap-2 rounded-pos border border-border bg-pos-bg/45 p-2 sm:grid-cols-2 md:grid-cols-5">
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           <input
@@ -111,16 +113,17 @@ export function AuditPage() {
       {isError && <p className="text-red-400">No se pudo cargar la auditoría.</p>}
       {!isLoading && !isError && data?.items.length === 0 && <p className="text-slate-500">No hay registros para estos filtros.</p>}
 
-      <div className="space-y-1">
+      <div className="divide-y divide-border overflow-hidden rounded-posLg border border-border bg-pos-surface/85 shadow-pos">
         {data?.items.map((log) => (
           <button
             key={log.id}
             onClick={() => setSelected(log)}
-            className="flex w-full items-center justify-between rounded-md border-b border-slate-800 px-2 py-2 text-left text-sm text-slate-300 hover:bg-slate-900"
+            className="flex min-h-14 w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm text-textMuted hover:bg-white/5"
           >
-            <div>
-              <span className="font-medium text-white">{describeAuditLog(log.action, log.entityType)}</span>
-              <span className="ml-2 text-xs text-slate-500">{log.userName ?? "Sistema"}</span>
+            <div className="flex min-w-0 items-center gap-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"><History className="h-4 w-4" /></span><div>
+              <span className="block truncate font-medium text-text">{describeAuditLog(log.action, log.entityType)}</span>
+              <span className="text-xs text-textMuted">{log.userName ?? "Sistema"} · <span className="rounded-full bg-white/5 px-2 py-0.5">{AUDIT_ENTITY_LABELS[log.entityType] ?? log.entityType}</span></span>
+            </div>
             </div>
             <span className="text-xs text-slate-500">{formatDate(log.createdAt)}</span>
           </button>
@@ -128,7 +131,7 @@ export function AuditPage() {
       </div>
 
       {data && data.total > PAGE_SIZE && (
-        <div className="mt-4 flex items-center justify-between text-sm text-slate-400">
+        <div className="sticky bottom-0 flex items-center justify-between rounded-pos border border-border bg-pos-surface/95 p-2 text-sm text-textMuted backdrop-blur-md">
           <span>
             Página {data.page} de {totalPages} · {data.total} registros
           </span>
@@ -152,14 +155,7 @@ export function AuditPage() {
       )}
 
       {selected && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={() => setSelected(null)}>
-          <div role="dialog" aria-modal="true" className="w-full max-w-md rounded-xl !bg-slate-900 p-5" onClick={(e) => e.stopPropagation()}>
-            <div className="mb-3 flex items-start justify-between">
-              <h2 className="text-base font-bold text-white">{describeAuditLog(selected.action, selected.entityType)}</h2>
-              <button onClick={() => setSelected(null)} aria-label="Cerrar" className="text-slate-400 hover:text-white">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
+        <FormModal title={describeAuditLog(selected.action, selected.entityType)} onClose={() => setSelected(null)} width="max-w-md">
             <dl className="space-y-2 text-sm text-slate-300">
               <Row label="Fecha" value={formatDate(selected.createdAt)} />
               <Row label="Usuario" value={selected.userName ?? "Sistema"} />
@@ -174,8 +170,7 @@ export function AuditPage() {
                 </pre>
               </div>
             )}
-          </div>
-        </div>
+        </FormModal>
       )}
     </div>
   );

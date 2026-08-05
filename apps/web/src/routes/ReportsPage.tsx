@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchSalesReport, fetchProductsReport, fetchBilliardReport, type ReportRangeParams } from "../lib/reportsApi";
+import { BarChart3 } from "lucide-react";
+import { PageHeader } from "../components/PageHeader";
 
 function money(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -26,12 +28,13 @@ export function ReportsPage() {
 
   const anyLoading = sales.isLoading || products.isLoading || billiard.isLoading;
   const anyError = sales.isError || products.isError || billiard.isError;
+  const paymentMax = Math.max(...(sales.data?.byPaymentMethod.map((item) => item.totalCents) ?? []), 1);
+  const categoryMax = Math.max(...(products.data?.byCategory.map((item) => item.revenueCents) ?? []), 1);
 
   return (
-    <div className="p-3 md:p-4">
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-lg font-semibold text-white">Reportes</h1>
-        <div className="flex flex-wrap items-center gap-2">
+    <div className="space-y-4 p-3 md:p-4">
+      <PageHeader title="Reportes" description="Resumen real de ventas, productos y operación de billar." />
+      <div className="flex flex-wrap items-center gap-2 rounded-pos border border-border bg-pos-bg/45 p-2">
           {(["TODAY", "YESTERDAY", "CUSTOM"] as const).map((p) => (
             <button
               key={p}
@@ -48,14 +51,13 @@ export function ReportsPage() {
               <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="touch-target rounded-md bg-slate-800 px-2 text-sm text-white" />
             </div>
           )}
-        </div>
       </div>
 
       {anyLoading && <p className="text-slate-400">Cargando reportes…</p>}
       {anyError && <p className="text-red-400">No se pudieron cargar los reportes. Intenta de nuevo.</p>}
 
       {sales.data && (
-        <section className="mb-6">
+        <section className="rounded-posLg border border-border bg-pos-surface/85 p-4 shadow-pos">
           <h2 className="mb-2 font-semibold text-slate-200">Ventas</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <Stat label="Total" value={money(sales.data.totalSalesCents)} />
@@ -67,18 +69,15 @@ export function ReportsPage() {
             <p className="mt-3 text-sm text-slate-500">No hubo ventas en este periodo.</p>
           ) : (
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <div>
+              <div className="rounded-pos border border-border/70 bg-pos-bg/35 p-3">
                 <h3 className="mb-1 text-sm font-semibold text-slate-300">Por método de pago</h3>
                 <div className="space-y-1 text-sm text-slate-300">
                   {sales.data.byPaymentMethod.map((m) => (
-                    <div key={m.method} className="flex justify-between">
-                      <span>{m.method === "CASH" ? "Efectivo" : m.method === "CARD" ? "Tarjeta" : "Transferencia"}</span>
-                      <span>{money(m.totalCents)}</span>
-                    </div>
+                    <ReportBar key={m.method} label={m.method === "CASH" ? "Efectivo" : m.method === "CARD" ? "Tarjeta" : "Transferencia"} value={m.totalCents} max={paymentMax} />
                   ))}
                 </div>
               </div>
-              <div>
+              <div className="rounded-pos border border-border/70 bg-pos-bg/35 p-3">
                 <h3 className="mb-1 text-sm font-semibold text-slate-300">Por empleado</h3>
                 <div className="space-y-1 text-sm text-slate-300">
                   {sales.data.byEmployee.map((e) => (
@@ -89,7 +88,7 @@ export function ReportsPage() {
                   ))}
                 </div>
               </div>
-              <div className="sm:col-span-2">
+              <div className="rounded-pos border border-border/70 bg-pos-bg/35 p-3 sm:col-span-2">
                 <h3 className="mb-1 text-sm font-semibold text-slate-300">Por hora (America/Tijuana)</h3>
                 <div className="flex gap-1 overflow-x-auto pb-1">
                   {sales.data.byHour.map((h) => (
@@ -106,13 +105,13 @@ export function ReportsPage() {
       )}
 
       {products.data && (
-        <section className="mb-6">
+        <section className="rounded-posLg border border-border bg-pos-surface/85 p-4 shadow-pos">
           <h2 className="mb-2 font-semibold text-slate-200">Productos</h2>
           {products.data.topProducts.length === 0 ? (
             <p className="text-sm text-slate-500">No hay productos vendidos en este periodo.</p>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto rounded-pos border border-border">
                 <table className="w-full text-sm text-slate-300">
                   <thead className="text-slate-500">
                     <tr>
@@ -132,14 +131,11 @@ export function ReportsPage() {
                   </tbody>
                 </table>
               </div>
-              <div>
+              <div className="rounded-pos border border-border/70 bg-pos-bg/35 p-3">
                 <h3 className="mb-1 text-sm font-semibold text-slate-300">Ingreso por categoría</h3>
                 <div className="space-y-1 text-sm text-slate-300">
                   {products.data.byCategory.map((c) => (
-                    <div key={c.categoryId} className="flex justify-between">
-                      <span>{c.categoryName}</span>
-                      <span>{money(c.revenueCents)}</span>
-                    </div>
+                    <ReportBar key={c.categoryId} label={c.categoryName} value={c.revenueCents} max={categoryMax} />
                   ))}
                 </div>
               </div>
@@ -149,7 +145,7 @@ export function ReportsPage() {
       )}
 
       {billiard.data && (
-        <section>
+        <section className="rounded-posLg border border-border bg-pos-surface/85 p-4 shadow-pos">
           <h2 className="mb-2 font-semibold text-slate-200">Billar</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Stat label="Sesiones" value={String(billiard.data.sessionCount)} />
@@ -177,9 +173,14 @@ export function ReportsPage() {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md bg-slate-900 p-3 text-center">
-      <p className="text-xl font-bold text-white">{value}</p>
+    <div className="rounded-pos border border-border bg-pos-bg/50 p-3 text-center">
+      <BarChart3 className="mx-auto mb-1 h-4 w-4 text-primary" />
+      <p className="text-xl font-bold text-text">{value}</p>
       <p className="text-xs text-slate-400">{label}</p>
     </div>
   );
+}
+
+function ReportBar({ label, value, max }: { label: string; value: number; max: number }) {
+  return <div><div className="mb-1 flex justify-between gap-3"><span>{label}</span><span className="font-semibold text-text">{money(value)}</span></div><div className="h-2 overflow-hidden rounded-full bg-white/5"><div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(3, (value / max) * 100)}%` }} /></div></div>;
 }

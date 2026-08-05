@@ -66,7 +66,7 @@ export function BilliardControls({ table, orderId }: { table: DiningTable; order
   const estimateCents = session ? Math.max(Math.ceil(elapsed / 60) * session.appliedPricePerMinuteCents, session.minimumChargeCents) : 0;
 
   return (
-    <div className="mb-sm rounded-xl border border-primary/40 bg-primary/10 p-md">
+    <div className="rounded-pos border border-primary/40 bg-primary/10 p-2">
       {error && (
         <button type="button" className="mb-2 block text-left text-xs text-red-300" onClick={() => setError(null)}>
           {error}
@@ -74,14 +74,14 @@ export function BilliardControls({ table, orderId }: { table: DiningTable; order
       )}
       {!session && (
         <div>
-          <p className="mb-sm text-sm text-primary">Billar sin iniciar</p>
+          <p className="mb-1 text-xs font-semibold text-primary">Billar sin iniciar</p>
           <div className="flex flex-wrap gap-2">
             {rates?.map((rate) => (
               <button
                 key={rate.id}
                 disabled={busy}
                 onClick={() => startMutation.mutate(rate.id)}
-                className="touch-target rounded-xl bg-primary px-md text-sm font-medium text-black disabled:opacity-50"
+                className="touch-target rounded-pos bg-primary px-3 text-sm font-medium text-black disabled:opacity-50"
               >
                 Iniciar · {rate.name}
               </button>
@@ -91,9 +91,9 @@ export function BilliardControls({ table, orderId }: { table: DiningTable; order
         </div>
       )}
       {session && (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="font-mono text-lg text-primary">{formatElapsed(elapsed)}</p>
+            <p className="font-mono text-base font-bold text-primary">{formatElapsed(elapsed)}</p>
             <p className="text-xs text-textMuted">Estimado: ${(estimateCents / 100).toFixed(2)} · {session.status}</p>
           </div>
           <div className="flex gap-2">

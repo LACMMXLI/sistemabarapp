@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Ban, CheckCircle2, Clock, User } from "lucide-react";
+import { Ban, CheckCircle2, Clock, Plus, User, Users } from "lucide-react";
 import type { DiningTable, DiningTableType } from "@barapp/contracts";
 import { TABLE_POLL_INTERVAL_MS, APP_TIMEZONE } from "@barapp/config";
 import { fetchTables, openTable } from "../lib/tablesApi";
 import { createTable, updateTable } from "../lib/adminApi";
 import { ApiError } from "../lib/api";
 import { usePermission } from "../hooks/usePermission";
+import { PageHeader } from "../components/PageHeader";
+import { FormModal } from "../components/FormModal";
 
 const STATUS_STYLES: Record<DiningTable["status"], string> = {
   AVAILABLE: "bg-success/10 border-success",
@@ -45,6 +47,8 @@ export function TablesPage({ typeFilter }: { typeFilter?: DiningTableType }) {
   const [newTableName, setNewTableName] = useState("");
   const [newTableType, setNewTableType] = useState<DiningTableType>(typeFilter ?? "STANDARD");
   const [newTableCapacity, setNewTableCapacity] = useState("");
+  const [showCreate, setShowCreate] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<"ALL" | DiningTable["status"]>("ALL");
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["tables"],
@@ -52,7 +56,8 @@ export function TablesPage({ typeFilter }: { typeFilter?: DiningTableType }) {
     refetchInterval: TABLE_POLL_INTERVAL_MS,
   });
 
-  const tables = typeFilter ? data?.filter((t) => t.type === typeFilter) : data;
+  const typedTables = typeFilter ? data?.filter((t) => t.type === typeFilter) : data;
+  const tables = statusFilter === "ALL" ? typedTables : typedTables?.filter((table) => table.status === statusFilter);
 
   const openMutation = useMutation({
     mutationFn: openTable,
@@ -73,6 +78,7 @@ export function TablesPage({ typeFilter }: { typeFilter?: DiningTableType }) {
     onSuccess: () => {
       setNewTableName("");
       setNewTableCapacity("");
+      setShowCreate(false);
       queryClient.invalidateQueries({ queryKey: ["tables"] });
     },
     onError: (err) => setError(err instanceof ApiError ? err.message : "No se pudo crear la mesa."),
@@ -85,54 +91,28 @@ export function TablesPage({ typeFilter }: { typeFilter?: DiningTableType }) {
   });
 
   return (
-    <div className="p-md md:p-lg">
-      <h1 className="mb-lg text-xl font-semibold text-text">{typeFilter === "BILLIARD" ? "Billar" : "Mesas"}</h1>
+    <div className="space-y-4 p-md md:p-lg">
+      <PageHeader
+        title={typeFilter === "BILLIARD" ? "Billar" : "Mesas"}
+        description={typeFilter === "BILLIARD" ? "Control de mesas, tiempo y cuentas de billar." : "Consulta el estado y abre las cuentas del servicio."}
+        action={canManageTables ? (
+          <button onClick={() => setShowCreate(true)} className="touch-target flex items-center gap-2 rounded-pos bg-primary px-4 font-semibold text-black">
+            <Plus className="h-4 w-4" /> Agregar {typeFilter === "BILLIARD" ? "billar" : "mesa"}
+          </button>
+        ) : undefined}
+      />
       {error && (
         <button type="button" className="mb-4 block w-full rounded-md bg-red-900/60 px-4 py-2 text-left text-sm text-red-200" onClick={() => setError(null)}>
           {error}
         </button>
       )}
-      {canManageTables && (
-        <div className="mb-4 flex flex-wrap gap-2">
-          <label htmlFor="new-table-name" className="sr-only">
-            Nombre de la mesa
-          </label>
-          <input
-            id="new-table-name"
-            placeholder="Nombre de la mesa"
-            value={newTableName}
-            onChange={(e) => setNewTableName(e.target.value)}
-            className="touch-target rounded-md bg-slate-800 px-3 text-white outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
-          />
-          {!typeFilter && (
-            <select
-              aria-label="Tipo de mesa"
-              value={newTableType}
-              onChange={(e) => setNewTableType(e.target.value as DiningTableType)}
-              className="touch-target rounded-md bg-slate-800 px-2 text-white"
-            >
-              <option value="STANDARD">Normal</option>
-              <option value="BILLIARD">Billar</option>
-            </select>
-          )}
-          <input
-            aria-label="Capacidad en personas"
-            placeholder="Personas"
-            type="number"
-            min={1}
-            value={newTableCapacity}
-            onChange={(e) => setNewTableCapacity(e.target.value)}
-            className="w-24 touch-target rounded-md bg-slate-800 px-3 text-white"
-          />
-          <button
-            disabled={!newTableName || createMutation.isPending}
-            onClick={() => createMutation.mutate()}
-            className="touch-target rounded-md bg-sky-600 px-4 text-white disabled:opacity-40"
-          >
-            Agregar mesa
+      <div className="flex gap-2 overflow-x-auto rounded-pos border border-border bg-pos-bg/45 p-2">
+        {(["ALL", "AVAILABLE", "OCCUPIED", "BILLIARD_ACTIVE", "OUT_OF_SERVICE"] as const).map((status) => (
+          <button key={status} onClick={() => setStatusFilter(status)} className={`touch-target shrink-0 rounded-pos px-3 text-sm font-medium ${statusFilter === status ? "bg-primary text-black" : "text-textMuted hover:bg-white/5"}`}>
+            {status === "ALL" ? "Todas" : STATUS_LABELS[status]}
           </button>
-        </div>
-      )}
+        ))}
+      </div>
 
       {isLoading && <p className="p-6 text-slate-400">Cargando mesas…</p>}
       {isError && <p className="p-6 text-red-400">No se pudieron cargar las mesas.</p>}
@@ -140,7 +120,7 @@ export function TablesPage({ typeFilter }: { typeFilter?: DiningTableType }) {
         <p className="p-6 text-slate-500">Todavía no hay mesas registradas.</p>
       )}
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
         {tables?.map((table) => (
           <TableCard
             key={table.id}
@@ -151,6 +131,33 @@ export function TablesPage({ typeFilter }: { typeFilter?: DiningTableType }) {
           />
         ))}
       </div>
+
+      {showCreate && (
+        <FormModal
+          title={`Agregar ${typeFilter === "BILLIARD" ? "billar" : "mesa"}`}
+          onClose={() => setShowCreate(false)}
+          footer={(
+            <>
+              <button onClick={() => setShowCreate(false)} className="touch-target flex-1 rounded-pos border border-border text-textMuted">Cancelar</button>
+              <button disabled={!newTableName || createMutation.isPending} onClick={() => createMutation.mutate()} className="touch-target flex-1 rounded-pos bg-primary font-semibold text-black disabled:opacity-40">
+                {createMutation.isPending ? "Guardando…" : "Guardar"}
+              </button>
+            </>
+          )}
+        >
+          <div className="space-y-3">
+            <label className="block text-sm text-textMuted">Nombre
+              <input autoFocus value={newTableName} onChange={(e) => setNewTableName(e.target.value)} className="mt-1 w-full touch-target rounded-pos border border-border bg-pos-bg px-3 text-text" />
+            </label>
+            {!typeFilter && <label className="block text-sm text-textMuted">Tipo
+              <select value={newTableType} onChange={(e) => setNewTableType(e.target.value as DiningTableType)} className="mt-1 w-full touch-target rounded-pos border border-border bg-pos-bg px-3 text-text"><option value="STANDARD">Normal</option><option value="BILLIARD">Billar</option></select>
+            </label>}
+            <label className="block text-sm text-textMuted">Capacidad
+              <input type="number" min={1} value={newTableCapacity} onChange={(e) => setNewTableCapacity(e.target.value)} placeholder="Número de personas" className="mt-1 w-full touch-target rounded-pos border border-border bg-pos-bg px-3 text-text" />
+            </label>
+          </div>
+        </FormModal>
+      )}
     </div>
   );
 }
@@ -177,30 +184,17 @@ function TableCard({
   const elapsed = (table.billiardElapsedSeconds ?? 0) + (table.billiardStatus === "ACTIVE" ? tick : 0);
 
   return (
-    <div className={`relative overflow-hidden rounded-2xl border-2 shadow-md ${STATUS_STYLES[table.status]}`}>
-      {canManage && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleOutOfService();
-          }}
-          aria-label={table.outOfService ? "Marcar disponible" : "Marcar fuera de servicio"}
-          title={table.outOfService ? "Marcar disponible" : "Marcar fuera de servicio"}
-          className="absolute right-1 top-1 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-slate-300 hover:text-white"
-        >
-          {table.outOfService ? <CheckCircle2 className="h-4 w-4" /> : <Ban className="h-4 w-4" />}
-        </button>
-      )}
+    <div className={`overflow-hidden rounded-posLg border shadow-pos ${STATUS_STYLES[table.status]}`}>
       <button
         onClick={onTap}
         disabled={table.outOfService}
-        className="touch-target flex w-full flex-col items-start gap-1 p-3 text-left"
+        className="flex min-h-32 w-full flex-col items-start gap-1 p-4 text-left"
       >
-        <div className="flex w-full items-center justify-between pr-6">
+        <div className="flex w-full items-center justify-between">
           <span className="text-base font-bold text-text">{table.name}</span>
-          {table.capacity !== null && <span className="text-[11px] text-textMuted">{table.capacity} pers.</span>}
+          <span className="rounded-full border border-current/30 px-2 py-1 text-[11px] font-semibold">{table.billiardStatus === "PAUSED" ? "Pausada" : STATUS_LABELS[table.status]}</span>
         </div>
-        <span className="text-xs text-textMuted">{STATUS_LABELS[table.status]}</span>
+        {table.capacity !== null && <span className="flex items-center gap-1 text-xs text-textMuted"><Users className="h-3.5 w-3.5" /> {table.capacity} personas</span>}
         {table.billiardElapsedSeconds !== null && (
           <span className="font-mono text-sm text-primary">{formatElapsed(elapsed)}</span>
         )}
@@ -218,6 +212,14 @@ function TableCard({
           </span>
         )}
       </button>
+      <div className="flex gap-2 border-t border-current/20 p-2">
+        <button onClick={onTap} disabled={table.outOfService} className="touch-target flex-1 rounded-pos bg-pos-bg/70 px-3 text-sm font-semibold text-text disabled:opacity-40">
+          {table.activeOrderId ? "Ver cuenta" : "Abrir mesa"}
+        </button>
+        {canManage && <button onClick={onToggleOutOfService} className="touch-target flex items-center gap-1 rounded-pos border border-current/25 px-3 text-xs text-textMuted">
+          {table.outOfService ? <CheckCircle2 className="h-4 w-4" /> : <Ban className="h-4 w-4" />} {table.outOfService ? "Reactivar" : "Fuera de servicio"}
+        </button>}
+      </div>
     </div>
   );
 }

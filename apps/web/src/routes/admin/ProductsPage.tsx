@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Tags } from "lucide-react";
+import { Pencil, Plus, Search, Tags } from "lucide-react";
 import type { ProductAdmin } from "@barapp/contracts";
 import { fetchProductsAdmin, createProduct, updateProduct, fetchCategoriesAdmin } from "../../lib/adminApi";
 import { ApiError } from "../../lib/api";
+import { PageHeader } from "../../components/PageHeader";
+import { FormModal } from "../../components/FormModal";
 
 export function ProductsPage() {
   const queryClient = useQueryClient();
@@ -19,6 +21,17 @@ export function ProductsPage() {
   const [initialStock, setInitialStock] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [editingProduct, setEditingProduct] = useState<ProductAdmin | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [search, setSearch] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterStatus, setFilterStatus] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+
+  const visibleProducts = products?.filter((product) =>
+    product.name.toLocaleLowerCase("es").includes(search.toLocaleLowerCase("es")) &&
+    (!filterCategory || product.categoryId === filterCategory) &&
+    (filterStatus === "ALL" || (filterStatus === "ACTIVE" ? product.active : !product.active)),
+  );
+  const categoryName = (id: string) => categories?.find((category) => category.id === id)?.name ?? "Sin categoría";
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["products-admin"] });
@@ -46,82 +59,21 @@ export function ProductsPage() {
       setImageUrl("");
       setInitialStock(0);
       setError(null);
+      setShowCreate(false);
       invalidate();
     },
     onError: (err) => setError(err instanceof ApiError ? err.message : "No se pudo crear el producto."),
   });
 
   return (
-    <div className="p-3 md:p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-white">Productos</h1>
-        <Link to="/categorias" className="touch-target flex items-center gap-2 rounded-md bg-slate-800 px-3 text-sm text-slate-200">
-          <Tags className="h-4 w-4" /> Categorías
-        </Link>
-      </div>
+    <div className="space-y-4 p-3 md:p-4">
+      <PageHeader title="Productos" description="Catálogo, precios, disponibilidad y control de existencias." action={<div className="flex gap-2"><Link to="/categorias" className="touch-target flex items-center gap-2 rounded-pos border border-border px-3 text-sm text-textMuted"><Tags className="h-4 w-4" /> Categorías</Link><button onClick={() => setShowCreate(true)} className="touch-target flex items-center gap-2 rounded-pos bg-primary px-4 font-semibold text-black"><Plus className="h-4 w-4" /> Nuevo producto</button></div>} />
 
-      <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-5">
-        <div>
-          <label htmlFor="new-product-name" className="mb-1 block text-xs text-slate-400">
-            Nombre
-          </label>
-          <input id="new-product-name" value={name} onChange={(e) => setName(e.target.value)} className="w-full touch-target rounded-md bg-slate-800 px-3 text-white" />
-        </div>
-        <div>
-          <label htmlFor="new-product-price" className="mb-1 block text-xs text-slate-400">
-            Precio
-          </label>
-          <input id="new-product-price" value={priceInput} onChange={(e) => setPriceInput(e.target.value)} inputMode="decimal" className="w-full touch-target rounded-md bg-slate-800 px-3 text-white" />
-        </div>
-        <div>
-          <label htmlFor="new-product-category" className="mb-1 block text-xs text-slate-400">
-            Categoría
-          </label>
-          <select id="new-product-category" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className="w-full touch-target rounded-md bg-slate-800 px-2 text-white">
-            <option value="">Selecciona…</option>
-            {categories?.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="new-product-image" className="mb-1 block text-xs text-slate-400">
-            URL de la foto (opcional)
-          </label>
-          <input
-            id="new-product-image"
-            placeholder="https://…"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            className="w-full touch-target rounded-md bg-slate-800 px-3 text-white"
-          />
-        </div>
-        <div className="flex flex-col justify-end gap-2">
-          <label className="flex touch-target items-center gap-2 text-sm text-slate-300">
-            <input type="checkbox" checked={tracksInventory} onChange={(e) => setTracksInventory(e.target.checked)} />
-            Controla inventario
-          </label>
-          {tracksInventory && (
-            <input
-              type="number"
-              aria-label="Stock inicial"
-              placeholder="Stock inicial"
-              value={initialStock}
-              onChange={(e) => setInitialStock(Number(e.target.value))}
-              className="touch-target rounded-md bg-slate-800 px-3 text-white"
-            />
-          )}
-        </div>
+      <div className="grid gap-2 rounded-pos border border-border bg-pos-bg/45 p-2 sm:grid-cols-[minmax(180px,1fr)_180px_150px]">
+        <label className="relative"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-textMuted" /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar producto…" className="w-full touch-target rounded-pos border border-border bg-pos-bg pl-9 pr-3 text-text" /></label>
+        <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="touch-target rounded-pos border border-border bg-pos-bg px-3 text-text"><option value="">Todas las categorías</option>{categories?.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select>
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as typeof filterStatus)} className="touch-target rounded-pos border border-border bg-pos-bg px-3 text-text"><option value="ALL">Todos</option><option value="ACTIVE">Activos</option><option value="INACTIVE">Inactivos</option></select>
       </div>
-      <button
-        disabled={!name || !categoryId || createMutation.isPending}
-        onClick={() => createMutation.mutate()}
-        className="touch-target mb-4 rounded-md bg-sky-600 px-4 text-white disabled:opacity-40"
-      >
-        Crear producto
-      </button>
       {error && (
         <button type="button" className="mb-3 block w-full rounded-md bg-red-900/60 px-3 py-2 text-left text-sm text-red-200" onClick={() => setError(null)}>
           {error}
@@ -131,12 +83,13 @@ export function ProductsPage() {
       {isLoading && <p className="text-slate-400">Cargando productos…</p>}
       {isError && <p className="text-red-400">No se pudieron cargar los productos.</p>}
 
-      <div className="overflow-x-auto rounded-md">
-        <table className="w-full min-w-[560px] text-sm text-slate-200">
+      <div className="hidden overflow-x-auto rounded-pos border border-border md:block">
+        <table className="w-full min-w-[680px] text-sm text-text">
           <thead className="text-slate-400">
             <tr>
               <th className="py-1 text-left"></th>
               <th className="text-left">Nombre</th>
+              <th className="text-left">Categoría</th>
               <th className="text-right">Precio</th>
               <th className="text-right">Stock</th>
               <th className="text-right">Estado</th>
@@ -144,7 +97,7 @@ export function ProductsPage() {
             </tr>
           </thead>
           <tbody>
-            {products?.map((p) => (
+            {visibleProducts?.map((p) => (
               <tr key={p.id} className="border-t border-slate-800">
                 <td className="w-10 py-1.5">
                   {p.imageUrl ? (
@@ -154,6 +107,7 @@ export function ProductsPage() {
                   )}
                 </td>
                 <td className={p.active ? "" : "text-slate-500 line-through"}>{p.name}</td>
+                <td>{categoryName(p.categoryId)}</td>
                 <td className="text-right">${(p.priceCents / 100).toFixed(2)}</td>
                 <td className="text-right">{p.currentStock ?? "—"}</td>
                 <td className="text-right">
@@ -173,6 +127,11 @@ export function ProductsPage() {
           </tbody>
         </table>
       </div>
+      <div className="space-y-2 md:hidden">{visibleProducts?.map((product) => <div key={product.id} className="flex items-center gap-3 rounded-pos border border-border bg-pos-surface/85 p-3"><div className="h-12 w-12 overflow-hidden rounded-pos bg-pos-bg">{product.imageUrl ? <img src={product.imageUrl} alt="" className="h-full w-full object-cover" /> : null}</div><div className="min-w-0 flex-1"><p className="truncate font-semibold text-text">{product.name}</p><p className="text-xs text-textMuted">{categoryName(product.categoryId)} · ${(product.priceCents / 100).toFixed(2)}</p><span className={`text-xs ${product.active ? "text-success" : "text-textMuted"}`}>{product.active ? "Activo" : "Inactivo"}</span></div><button onClick={() => setEditingProduct(product)} aria-label={`Editar ${product.name}`} className="touch-target flex w-11 items-center justify-center rounded-pos border border-border text-text"><Pencil className="h-4 w-4" /></button></div>)}</div>
+
+      {showCreate && <FormModal title="Nuevo producto" onClose={() => setShowCreate(false)} footer={<><button onClick={() => setShowCreate(false)} className="touch-target flex-1 rounded-pos border border-border text-textMuted">Cancelar</button><button disabled={!name || !categoryId || createMutation.isPending} onClick={() => createMutation.mutate()} className="touch-target flex-1 rounded-pos bg-primary font-semibold text-black disabled:opacity-40">{createMutation.isPending ? "Guardando…" : "Crear producto"}</button></>}>
+        <div className="space-y-3"><label className="block text-sm text-textMuted">Nombre<input value={name} onChange={(e) => setName(e.target.value)} className="mt-1 w-full touch-target rounded-pos border border-border bg-pos-bg px-3 text-text" /></label><div className="grid gap-3 sm:grid-cols-2"><label className="text-sm text-textMuted">Precio<input value={priceInput} onChange={(e) => setPriceInput(e.target.value)} inputMode="decimal" className="mt-1 w-full touch-target rounded-pos border border-border bg-pos-bg px-3 text-text" /></label><label className="text-sm text-textMuted">Categoría<select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className="mt-1 w-full touch-target rounded-pos border border-border bg-pos-bg px-3 text-text"><option value="">Selecciona…</option>{categories?.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></label></div><label className="block text-sm text-textMuted">URL de la foto<input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://…" className="mt-1 w-full touch-target rounded-pos border border-border bg-pos-bg px-3 text-text" /></label><label className="flex touch-target items-center gap-2 text-sm text-text"><input type="checkbox" checked={tracksInventory} onChange={(e) => setTracksInventory(e.target.checked)} /> Controla inventario</label>{tracksInventory && <label className="block text-sm text-textMuted">Stock inicial<input type="number" value={initialStock} onChange={(e) => setInitialStock(Number(e.target.value))} className="mt-1 w-full touch-target rounded-pos border border-border bg-pos-bg px-3 text-text" /></label>}{error && <p className="text-sm text-error">{error}</p>}</div>
+      </FormModal>}
 
       {editingProduct && (
         <EditProductDialog
@@ -215,14 +174,7 @@ function EditProductDialog({ product, onClose, onSaved }: { product: ProductAdmi
   });
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4" onClick={onClose}>
-      <div
-        role="dialog"
-        aria-modal="true"
-        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl !bg-slate-900 p-5"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 className="mb-4 text-lg font-bold text-white">Editar producto</h2>
+    <FormModal title="Editar producto" onClose={onClose} width="max-w-md" footer={<><button onClick={onClose} disabled={saveMutation.isPending} className="touch-target flex-1 rounded-pos border border-border text-textMuted disabled:opacity-50">Cancelar</button><button onClick={() => saveMutation.mutate()} disabled={!name || !categoryId || saveMutation.isPending} className="touch-target flex-1 rounded-pos bg-primary font-semibold text-black disabled:opacity-50">{saveMutation.isPending ? "Guardando…" : "Guardar"}</button></>}>
 
         <label htmlFor="edit-product-name" className="mb-1 block text-sm text-slate-300">
           Nombre
@@ -294,19 +246,6 @@ function EditProductDialog({ product, onClose, onSaved }: { product: ProductAdmi
 
         {error && <p className="mb-3 text-sm text-red-400">{error}</p>}
 
-        <div className="flex gap-2">
-          <button onClick={onClose} disabled={saveMutation.isPending} className="touch-target flex-1 rounded-md bg-slate-800 text-slate-300 disabled:opacity-50">
-            Cancelar
-          </button>
-          <button
-            onClick={() => saveMutation.mutate()}
-            disabled={!name || !categoryId || saveMutation.isPending}
-            className="touch-target flex-1 rounded-md bg-sky-600 font-semibold text-white disabled:opacity-50"
-          >
-            {saveMutation.isPending ? "Guardando…" : "Guardar"}
-          </button>
-        </div>
-      </div>
-    </div>
+    </FormModal>
   );
 }

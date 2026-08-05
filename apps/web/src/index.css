@@ -29,9 +29,105 @@ body {
    translúcido para que el fondo se vea detrás, salvo donde se marque con
    !bg-slate-900 (diálogos/modales, que deben quedar 100% opacos). */
 .bg-slate-900 {
-  background-color: rgba(15, 23, 42, 0.82);
+  background-color: rgba(13, 17, 21, 0.92);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+}
+
+/* Las vistas operativas comparten el lenguaje visual de Venta rápida sin
+   duplicar estilos en cada pantalla. */
+.app-view-shell {
+  scrollbar-color: rgb(112 121 129 / 0.75) transparent;
+}
+
+.app-view-shell h1 {
+  color: #f5f7f8;
+  font-weight: 700;
+}
+
+.app-view-shell h2,
+.app-view-shell h3 {
+  color: #f5f7f8;
+}
+
+.app-view-shell .bg-slate-900 {
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 16px;
+  background-color: rgb(13 17 21 / 0.9);
+  box-shadow: 0 14px 34px rgb(0 0 0 / 0.3);
+}
+
+.app-view-shell .bg-slate-800 {
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 12px;
+  background-color: rgb(18 24 29 / 0.92);
+}
+
+.app-view-shell .bg-slate-700 {
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 12px;
+  background-color: rgb(255 255 255 / 0.08);
+}
+
+.app-view-shell input:not([type="checkbox"]):not([type="radio"]),
+.app-view-shell select,
+.app-view-shell textarea {
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 12px;
+  background-color: rgb(18 24 29 / 0.94);
+  color: #f5f7f8;
+}
+
+.app-view-shell input::placeholder,
+.app-view-shell textarea::placeholder {
+  color: #707981;
+}
+
+.app-view-shell input:focus,
+.app-view-shell select:focus,
+.app-view-shell textarea:focus {
+  border-color: rgb(255 196 0 / 0.7);
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(255 196 0 / 0.12);
+}
+
+.app-view-shell .bg-sky-600 {
+  border: 1px solid rgb(255 196 0 / 0.5);
+  border-radius: 12px;
+  background-color: #ffc400;
+  color: #07090b;
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgb(255 173 0 / 0.16);
+}
+
+.app-view-shell .bg-sky-600:hover {
+  background-color: #ffad00;
+}
+
+.app-view-shell table {
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 12px;
+  background: rgb(13 17 21 / 0.72);
+}
+
+.app-view-shell thead {
+  background: rgb(255 255 255 / 0.04);
+}
+
+.app-view-shell th,
+.app-view-shell td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgb(255 255 255 / 0.06);
+}
+
+.app-view-shell tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.app-view-shell tbody tr:hover {
+  background: rgb(255 255 255 / 0.035);
 }
 
 button {

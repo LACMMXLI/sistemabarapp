@@ -5,6 +5,7 @@ import { fetchRegisters, createRegister, openShift, fetchShift, createCashMoveme
 import { ApiError } from "../lib/api";
 import { usePermission } from "../hooks/usePermission";
 import { ConfirmDialog } from "../components/ConfirmDialog";
+import { PageHeader } from "../components/PageHeader";
 
 function money(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -79,8 +80,8 @@ export function CashPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl p-3 md:p-4">
-      <h1 className="mb-4 text-lg font-semibold text-white">Caja</h1>
+    <div className="space-y-4 p-3 md:p-4">
+      <PageHeader title="Caja" description={shift ? `${shift.registerName} · Turno abierto por ${shift.openedByName}` : "Apertura, movimientos y corte del turno actual."} />
       {error && (
         <button type="button" className="mb-3 block w-full rounded-md bg-red-900/60 px-3 py-2 text-left text-sm text-red-200" onClick={() => setError(null)}>
           {error}
@@ -88,7 +89,7 @@ export function CashPage() {
       )}
 
       {!shift && (
-        <div className="rounded-md bg-slate-900 p-4">
+        <div className="mx-auto max-w-2xl rounded-posLg border border-border bg-pos-surface/90 p-5 shadow-pos">
           <div className="mb-3 flex items-center gap-2 text-slate-300">
             <Unlock className="h-5 w-5 text-amber-400" />
             <p>No hay un turno de caja abierto. No se pueden cobrar cuentas hasta abrir uno.</p>
@@ -154,23 +155,25 @@ export function CashPage() {
       )}
 
       {shift && (
-        <div className="space-y-4">
-          <div className="rounded-md bg-slate-900 p-4 text-sm text-slate-200">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="rounded-posLg border border-border bg-pos-surface/90 p-4 text-sm text-text shadow-pos lg:col-span-2">
             <p className="mb-2 flex items-center gap-2 font-semibold text-white">
               <Lock className="h-4 w-4 text-emerald-400" /> {shift.registerName} · Turno abierto
             </p>
             <p className="mb-3 text-xs text-slate-500">Abierto por {shift.openedByName}</p>
-            <Row label="Fondo inicial" value={shift.openingFloatCents} />
-            <Row label="Ventas efectivo" value={shift.cashSalesCents} />
-            <Row label="Ventas tarjeta" value={shift.cardSalesCents} />
-            <Row label="Ventas transferencia" value={shift.transferSalesCents} />
-            <Row label="Entradas" value={shift.cashInCents} />
-            <Row label="Salidas" value={-shift.cashOutCents} />
-            <Row label="Efectivo esperado" value={shift.expectedCashCents} bold />
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+              <Row label="Fondo inicial" value={shift.openingFloatCents} />
+              <Row label="Ventas efectivo" value={shift.cashSalesCents} />
+              <Row label="Ventas tarjeta" value={shift.cardSalesCents} />
+              <Row label="Transferencia" value={shift.transferSalesCents} />
+              <Row label="Entradas" value={shift.cashInCents} />
+              <Row label="Salidas" value={-shift.cashOutCents} />
+              <Row label="Efectivo esperado" value={shift.expectedCashCents} bold />
+            </div>
           </div>
 
           {canMove && (
-            <div className="rounded-md bg-slate-900 p-4">
+            <div className="rounded-posLg border border-border bg-pos-surface/90 p-4 shadow-pos">
               <p className="mb-2 flex items-center gap-2 font-semibold text-white">
                 <CircleDollarSign className="h-4 w-4" /> Movimiento de efectivo
               </p>
@@ -214,7 +217,7 @@ export function CashPage() {
           )}
 
           {canClose && (
-            <div className="rounded-md bg-slate-900 p-4">
+            <div className="rounded-posLg border border-border bg-pos-surface/90 p-4 shadow-pos">
               <p className="mb-2 font-semibold text-white">Corte de caja</p>
               <label htmlFor="counted-cash" className="mb-1 block text-sm text-slate-300">
                 Efectivo contado
@@ -262,9 +265,9 @@ export function CashPage() {
 
 function Row({ label, value, bold }: { label: string; value: number; bold?: boolean }) {
   return (
-    <div className={`flex justify-between ${bold ? "font-bold text-white" : ""}`}>
-      <span>{label}</span>
-      <span>{money(value)}</span>
+    <div className={`rounded-pos border border-border/70 bg-pos-bg/45 p-3 ${bold ? "font-bold text-text" : ""}`}>
+      <span className="block text-xs text-textMuted">{label}</span>
+      <span className="mt-1 block text-lg font-semibold">{money(value)}</span>
     </div>
   );
 }
